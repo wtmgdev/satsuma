@@ -271,9 +271,9 @@ function AgentSetupCard({ siteUrl, token }: { siteUrl: string; token: string }) 
                     <li className="flex gap-2">
                         <span className="font-medium text-foreground">2.</span>
                         <span>
-                            Activate it, then store this site's token via{' '}
-                            <code>wp shoal token {'<token>'}</code> or the{' '}
-                            <code>SHOAL_AGENT_TOKEN</code> constant.
+                            Activate it, then paste the token below into{' '}
+                            <code>Settings → Shoal Agent</code> in the site's
+                            wp-admin.
                         </span>
                     </li>
                     <li className="flex gap-2">
