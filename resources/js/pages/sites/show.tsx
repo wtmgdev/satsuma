@@ -261,17 +261,18 @@ function AgentSetupCard({ siteUrl, token }: { siteUrl: string; token: string }) 
                                 href="/agent-plugin/download"
                                 className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4"
                             >
-                                Shoal agent plugin
+                                Shoal agent plugin (.zip)
                                 <Download />
                             </a>{' '}
-                            and install it on the WordPress site.
+                            and install it on the WordPress site via
+                            Plugins → Add New → Upload Plugin.
                         </span>
                     </li>
                     <li className="flex gap-2">
                         <span className="font-medium text-foreground">2.</span>
                         <span>
-                            Store this site's token on the WordPress site
-                            via <code>wp shoal token {'<token>'}</code> or the{' '}
+                            Activate it, then store this site's token via{' '}
+                            <code>wp shoal token {'<token>'}</code> or the{' '}
                             <code>SHOAL_AGENT_TOKEN</code> constant.
                         </span>
                     </li>

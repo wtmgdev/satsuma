@@ -6,6 +6,7 @@ use App\Models\Organization;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Queue;
+use ZipArchive;
 
 function userWithOrg(string $role = 'owner'): array
 {
@@ -159,11 +160,15 @@ it('deleting a client nullifies its sites instead of deleting them', function ()
     expect($site->refresh()->client_id)->toBeNull();
 });
 
-it('serves the agent plugin for download', function () {
+it('serves the agent plugin as an installable zip', function () {
     [$user] = userWithOrg();
 
-    $this->actingAs($user)
-        ->get('/agent-plugin/download')
-        ->assertOk()
-        ->assertDownload('shoal-agent.php');
+    $response = $this->actingAs($user)->get('/agent-plugin/download');
+
+    $response->assertOk()->assertDownload('shoal-agent.zip');
+
+    $zip = new ZipArchive;
+    $zip->open($response->getFile()->getPathname());
+
+    expect($zip->locateName('shoal-agent/shoal-agent.php'))->not->toBeFalse();
 });
