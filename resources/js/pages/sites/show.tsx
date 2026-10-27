@@ -8,6 +8,7 @@ import {
     ExternalLink,
     Eye,
     EyeOff,
+    Globe,
     Pencil,
     PlugZap,
     Puzzle,
@@ -72,6 +73,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from '@/components/ui/tabs';
 import type { Client, Site, SitePlugin } from '@/types';
 import type { PhpInfo, WpInfo } from '@/components/version-badges';
 import { versionCompare } from '@/components/version-badges';
@@ -275,103 +282,134 @@ export default function SiteShow({
                     </CardContent>
                 </Card>
 
-                {site.whois && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Domain</CardTitle>
-                            <CardDescription>
-                                {site.whois.domain} — from RDAP
-                                {site.whois_checked_at && ` · checked ${timeAgo(site.whois_checked_at)}`}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                                <div className="flex flex-col gap-1">
-                                    <dt className="text-xs text-muted-foreground">Registrar</dt>
-                                    <dd className="font-medium">
-                                        {site.whois.registrar ?? '—'}
-                                    </dd>
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <dt className="text-xs text-muted-foreground">Registered</dt>
-                                    <dd className="font-medium">
-                                        {site.whois.registered_at
-                                            ? new Date(site.whois.registered_at).toLocaleDateString()
-                                            : '—'}
-                                    </dd>
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <dt className="text-xs text-muted-foreground">Expires</dt>
-                                    <dd className="font-medium">
-                                        {site.whois.expires_at
-                                            ? new Date(site.whois.expires_at).toLocaleDateString()
-                                            : '—'}
-                                    </dd>
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <dt className="text-xs text-muted-foreground">Nameservers</dt>
-                                    <dd className="font-medium">
-                                        {site.whois.nameservers?.length
-                                            ? site.whois.nameservers.join(', ')
-                                            : '—'}
-                                    </dd>
-                                </div>
-                            </dl>
-                        </CardContent>
-                    </Card>
-                )}
+                <Tabs defaultValue="plugins">
+                    <TabsList>
+                        <TabsTrigger value="plugins">
+                            Plugins{site.plugins?.length ? ` · ${site.plugins.length}` : ''}
+                        </TabsTrigger>
+                        <TabsTrigger value="themes">
+                            Themes{site.themes?.length ? ` · ${site.themes.length}` : ''}
+                        </TabsTrigger>
+                        <TabsTrigger value="server">Server info</TabsTrigger>
+                    </TabsList>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Plugins</CardTitle>
-                        <CardDescription>
-                            Installed plugins and their update status.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {site.plugins?.length ? (
-                            <ComponentTable items={site.plugins} type="plugin" vulnerabilities={vulnerabilities} />
-                        ) : (
-                            <Empty>
-                                <EmptyHeader>
-                                    <EmptyMedia variant="icon">
-                                        <RefreshCw />
-                                    </EmptyMedia>
-                                    <EmptyTitle>Nothing scanned yet</EmptyTitle>
-                                    <EmptyDescription>
-                                        Run a scan to fetch the plugin inventory.
-                                    </EmptyDescription>
-                                </EmptyHeader>
-                            </Empty>
-                        )}
-                    </CardContent>
-                </Card>
+                    <TabsContent value="plugins">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Plugins</CardTitle>
+                                <CardDescription>
+                                    Installed plugins and their update status.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {site.plugins?.length ? (
+                                    <ComponentTable items={site.plugins} type="plugin" vulnerabilities={vulnerabilities} />
+                                ) : (
+                                    <Empty>
+                                        <EmptyHeader>
+                                            <EmptyMedia variant="icon">
+                                                <RefreshCw />
+                                            </EmptyMedia>
+                                            <EmptyTitle>Nothing scanned yet</EmptyTitle>
+                                            <EmptyDescription>
+                                                Run a scan to fetch the plugin inventory.
+                                            </EmptyDescription>
+                                        </EmptyHeader>
+                                    </Empty>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Themes</CardTitle>
-                        <CardDescription>
-                            Installed themes and their update status.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {site.themes?.length ? (
-                            <ComponentTable items={site.themes} type="theme" vulnerabilities={vulnerabilities} />
-                        ) : (
-                            <Empty>
-                                <EmptyHeader>
-                                    <EmptyMedia variant="icon">
-                                        <RefreshCw />
-                                    </EmptyMedia>
-                                    <EmptyTitle>Nothing scanned yet</EmptyTitle>
-                                    <EmptyDescription>
-                                        Run a scan to fetch the theme inventory.
-                                    </EmptyDescription>
-                                </EmptyHeader>
-                            </Empty>
-                        )}
-                    </CardContent>
-                </Card>
+                    <TabsContent value="themes">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Themes</CardTitle>
+                                <CardDescription>
+                                    Installed themes and their update status.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {site.themes?.length ? (
+                                    <ComponentTable items={site.themes} type="theme" vulnerabilities={vulnerabilities} />
+                                ) : (
+                                    <Empty>
+                                        <EmptyHeader>
+                                            <EmptyMedia variant="icon">
+                                                <RefreshCw />
+                                            </EmptyMedia>
+                                            <EmptyTitle>Nothing scanned yet</EmptyTitle>
+                                            <EmptyDescription>
+                                                Run a scan to fetch the theme inventory.
+                                            </EmptyDescription>
+                                        </EmptyHeader>
+                                    </Empty>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="server">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Domain</CardTitle>
+                                <CardDescription>
+                                    {site.whois
+                                        ? `${site.whois.domain ?? site.url} — from RDAP${site.whois_checked_at ? ` · checked ${timeAgo(site.whois_checked_at)}` : ''}`
+                                        : 'Domain registration details, refreshed daily via RDAP.'}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {site.whois ? (
+                                    <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+                                        <div className="flex flex-col gap-1">
+                                            <dt className="text-xs text-muted-foreground">Registrar</dt>
+                                            <dd className="font-medium">
+                                                {site.whois.registrar ?? '—'}
+                                            </dd>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <dt className="text-xs text-muted-foreground">Registered</dt>
+                                            <dd className="font-medium">
+                                                {site.whois.registered_at
+                                                    ? new Date(site.whois.registered_at).toLocaleDateString()
+                                                    : '—'}
+                                            </dd>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <dt className="text-xs text-muted-foreground">Expires</dt>
+                                            <dd className="font-medium">
+                                                {site.whois.expires_at
+                                                    ? new Date(site.whois.expires_at).toLocaleDateString()
+                                                    : '—'}
+                                            </dd>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <dt className="text-xs text-muted-foreground">Nameservers</dt>
+                                            <dd className="font-medium">
+                                                {site.whois.nameservers?.length
+                                                    ? site.whois.nameservers.join(', ')
+                                                    : '—'}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                ) : (
+                                    <Empty>
+                                        <EmptyHeader>
+                                            <EmptyMedia variant="icon">
+                                                <Globe />
+                                            </EmptyMedia>
+                                            <EmptyTitle>No domain info yet</EmptyTitle>
+                                            <EmptyDescription>
+                                                It will appear after the next scheduled whois check.
+                                            </EmptyDescription>
+                                        </EmptyHeader>
+                                    </Empty>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
             </div>
         </>
     );
