@@ -7,9 +7,32 @@ use ZipArchive;
 
 class AgentPluginController extends Controller
 {
+    public static function pluginPath(): string
+    {
+        return base_path('wp-agent/shoal-agent.php');
+    }
+
+    /**
+     * The shipped plugin version, parsed from the file header.
+     */
+    public static function version(): ?string
+    {
+        $pluginPath = self::pluginPath();
+
+        if (! is_file($pluginPath)) {
+            return null;
+        }
+
+        $header = (string) file_get_contents($pluginPath, false, null, 0, 2048);
+
+        preg_match('/^ \* Version:\s*(\S+)/m', $header, $matches);
+
+        return $matches[1] ?? null;
+    }
+
     public function download(): BinaryFileResponse
     {
-        $pluginPath = base_path('wp-agent/shoal-agent.php');
+        $pluginPath = self::pluginPath();
 
         abort_unless(is_file($pluginPath), 404);
 
@@ -23,7 +46,11 @@ class AgentPluginController extends Controller
         $zip->addFile($pluginPath, 'shoal-agent/shoal-agent.php');
         $zip->close();
 
-        return response()->download($zipPath, 'shoal-agent.zip')
+        $response = response()->download($zipPath, 'shoal-agent.zip')
             ->deleteFileAfterSend();
+
+        $response->headers->set('X-Agent-Plugin-Version', (string) self::version());
+
+        return $response;
     }
 }

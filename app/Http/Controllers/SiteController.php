@@ -58,6 +58,7 @@ class SiteController extends Controller
             'sites' => $sites,
             'clients' => $clients,
             'versionInfo' => $versionInfo,
+            'agentPluginVersion' => AgentPluginController::version(),
         ]);
     }
 
@@ -102,6 +103,7 @@ class SiteController extends Controller
             'site' => $site,
             'agentToken' => $site->api_token,
             'versionInfo' => app(VersionFeedService::class)->check($site),
+            'agentPluginVersion' => AgentPluginController::version(),
         ]);
     }
 

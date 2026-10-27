@@ -211,6 +211,8 @@ it('serves the agent plugin as an installable zip', function () {
 
     $response->assertOk()->assertDownload('shoal-agent.zip');
 
+    expect($response->headers->get('X-Agent-Plugin-Version'))->toMatch('/^\d+\.\d+\.\d+$/');
+
     $zip = new ZipArchive;
     $zip->open($response->getFile()->getPathname());
 

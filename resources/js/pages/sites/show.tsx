@@ -64,6 +64,7 @@ export default function SiteShow({
     site,
     agentToken,
     versionInfo,
+    agentPluginVersion,
 }: {
     site: Site;
     agentToken: string;
@@ -71,6 +72,7 @@ export default function SiteShow({
         php: PhpInfo;
         wp: WpInfo;
     };
+    agentPluginVersion: string | null;
 }) {
     const runScan = () => {
         router.post(siteScan(site).url, {}, { preserveScroll: true });
@@ -198,7 +200,7 @@ export default function SiteShow({
                     </CardContent>
                 </Card>
 
-                <AgentSetupCard siteUrl={site.url} token={agentToken} />
+                <AgentSetupCard siteUrl={site.url} token={agentToken} pluginVersion={agentPluginVersion} />
 
                 <Card>
                     <CardHeader>
@@ -297,7 +299,15 @@ function ComponentTable({ items }: { items: SitePlugin[] }) {
     );
 }
 
-function AgentSetupCard({ siteUrl, token }: { siteUrl: string; token: string }) {
+function AgentSetupCard({
+    siteUrl,
+    token,
+    pluginVersion,
+}: {
+    siteUrl: string;
+    token: string;
+    pluginVersion: string | null;
+}) {
     const [revealed, setRevealed] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -326,7 +336,7 @@ function AgentSetupCard({ siteUrl, token }: { siteUrl: string; token: string }) 
                                 href="/agent-plugin/download"
                                 className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4"
                             >
-                                Shoal agent plugin (.zip)
+                                Shoal agent plugin (.zip){pluginVersion ? ` v${pluginVersion}` : ''}
                                 <Download />
                             </a>{' '}
                             and install it on the WordPress site via

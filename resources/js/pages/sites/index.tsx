@@ -4,6 +4,7 @@ import { Globe, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
 import { CreateSiteDialog } from '@/components/create-site-dialog';
 import { PhpVersionBadge } from '@/components/version-badges';
+import { Download } from 'lucide-react';
 import { dashboard } from '@/routes';
 import {
     edit as siteEdit,
@@ -68,9 +69,10 @@ type Props = {
     sites: Site[];
     clients: Client[];
     versionInfo: Record<number, { php: PhpInfo; wp: WpInfo }>;
+    agentPluginVersion: string | null;
 };
 
-export default function SitesIndex({ sites, clients, versionInfo }: Props) {
+export default function SitesIndex({ sites, clients, versionInfo, agentPluginVersion }: Props) {
     const [createOpen, setCreateOpen] = useState(false);
 
     const working = sites.some(
@@ -95,17 +97,25 @@ export default function SitesIndex({ sites, clients, versionInfo }: Props) {
                                 All WordPress sites connected to this account.
                             </CardDescription>
                         </div>
-                        <CreateSiteDialog
-                            clients={clients}
-                            open={createOpen}
-                            onOpenChange={setCreateOpen}
-                            trigger={
-                                <Button size="sm">
-                                    <Plus data-icon="inline-start" />
-                                    New Site
-                                </Button>
-                            }
-                        />
+                        <div className="flex items-center gap-2">
+                            <Button size="sm" variant="outline" asChild title="Always the latest version">
+                                <a href="/agent-plugin/download">
+                                    <Download data-icon="inline-start" />
+                                    Agent plugin{agentPluginVersion ? ` v${agentPluginVersion}` : ''}
+                                </a>
+                            </Button>
+                            <CreateSiteDialog
+                                clients={clients}
+                                open={createOpen}
+                                onOpenChange={setCreateOpen}
+                                trigger={
+                                    <Button size="sm">
+                                        <Plus data-icon="inline-start" />
+                                        New Site
+                                    </Button>
+                                }
+                            />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {sites.length === 0 ? (
