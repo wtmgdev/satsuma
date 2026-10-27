@@ -3,14 +3,18 @@ import { useState } from 'react';
 import { Globe, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
 import { CreateSiteDialog } from '@/components/create-site-dialog';
+import { PhpVersionBadge } from '@/components/version-badges';
 import { dashboard } from '@/routes';
 import {
     edit as siteEdit,
     index as sitesIndex,
+    ping as sitePing,
     scan as siteScan,
     show as siteShow,
 } from '@/routes/sites';
+import { usePollWhile } from '@/hooks/use-poll-while';
 import { Badge } from '@/components/ui/badge';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -47,13 +51,33 @@ import {
 } from '@/components/ui/table';
 import type { Client, Site } from '@/types';
 
+type PhpInfo = {
+    installed: string | null;
+    latest_patch: string | null;
+    eol: boolean;
+    eol_date: string | null;
+};
+
+type WpInfo = {
+    installed: string | null;
+    latest: string | null;
+    update_available: boolean;
+};
+
 type Props = {
     sites: Site[];
     clients: Client[];
+    versionInfo: Record<number, { php: PhpInfo; wp: WpInfo }>;
 };
 
-export default function SitesIndex({ sites, clients }: Props) {
+export default function SitesIndex({ sites, clients, versionInfo }: Props) {
     const [createOpen, setCreateOpen] = useState(false);
+
+    const working = sites.some(
+        (site) => site.scan_status !== 'idle',
+    );
+
+    usePollWhile(working, ['sites']);
 
     const runScan = (site: Site) => {
         router.post(siteScan(site).url, {}, { preserveScroll: true });
@@ -136,33 +160,31 @@ export default function SitesIndex({ sites, clients }: Props) {
                                                 {site.client?.name ?? '—'}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant={
-                                                        site.connection_status === 'online'
-                                                            ? 'default'
-                                                            : 'destructive'
-                                                    }
-                                                >
-                                                    {site.connection_status}
-                                                </Badge>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge
+                                                        variant={
+                                                            site.connection_status === 'online'
+                                                                ? 'default'
+                                                                : 'destructive'
+                                                        }
+                                                    >
+                                                        {site.connection_status}
+                                                    </Badge>
+                                                    {site.scan_status !== 'idle' && (
+                                                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                            <Spinner className="size-3" />
+                                                            {site.scan_status === 'queued'
+                                                                ? 'Scan queued…'
+                                                                : 'Scanning…'}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-muted-foreground">
                                                 {site.wp_version ?? '—'}
                                             </TableCell>
                                             <TableCell>
-                                                {site.php_version ? (
-                                                    <Badge
-                                                        variant={
-                                                            comparePhp(site.php_version) < 0
-                                                                ? 'destructive'
-                                                                : 'outline'
-                                                        }
-                                                    >
-                                                        {site.php_version}
-                                                    </Badge>
-                                                ) : (
-                                                    <span className="text-muted-foreground">—</span>
-                                                )}
+                                                <PhpVersionBadge php={versionInfo[site.id]?.php ?? { installed: site.php_version, latest_patch: null, eol: false, eol_date: null }} />
                                             </TableCell>
                                             <TableCell className="text-muted-foreground">
                                                 {site.last_ping_at
@@ -235,11 +257,6 @@ function DeleteSiteButton({ site }: { site: Site }) {
             </DialogContent>
         </Dialog>
     );
-}
-
-function comparePhp(version: string): number {
-    const [major, minor = 0] = version.split('.').map(Number);
-    return major - 8 || minor - 1;
 }
 
 function timeAgo(date: string): string {

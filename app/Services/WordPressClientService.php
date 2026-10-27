@@ -36,4 +36,36 @@ class WordPressClientService
             return [];
         }
     }
+
+    /**
+     * Lightweight authenticated connection check. Returns the ping payload
+     * (versions included) or null when the site is unreachable/unauthorized.
+     */
+    public function pingSite(Site $site): ?array
+    {
+        try {
+            $response = Http::baseUrl(rtrim($site->url, '/'))
+                ->acceptJson()
+                ->timeout(5)
+                ->connectTimeout(3)
+                ->withHeaders([
+                    'X-Agent-Token' => $site->api_token,
+                ])
+                ->get('/wp-json/agent/v1/ping');
+
+            $payload = $response->throw()->json();
+
+            return is_array($payload) && ($payload['ok'] ?? false) === true ? $payload : null;
+        } catch (ConnectionException|RequestException $e) {
+            $site->update(['connection_status' => ConnectionStatus::Offline]);
+
+            Log::warning('Site ping failed.', [
+                'site_id' => $site->id,
+                'url' => $site->url,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
 }

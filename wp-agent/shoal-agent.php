@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Shoal Agent
  * Description: Companion REST agent for the Shoal WordPress management platform. Exposes read-only system info secured by a bearer token.
- * Version: 0.2.0
+ * Version: 0.4.0
  * Requires PHP: 7.4
  * Author: Shoal
  * Text Domain: shoal-agent
@@ -28,25 +28,59 @@ function shoal_agent_token(): string
     return is_string($stored) ? $stored : '';
 }
 
+/**
+ * Shared token check for all agent REST routes.
+ */
+function shoal_agent_authorize(WP_REST_Request $request): bool
+{
+    $provided = (string) $request->get_header('X-Agent-Token');
+    $expected = shoal_agent_token();
+
+    return $provided !== ''
+        && $expected !== ''
+        && hash_equals($expected, $provided);
+}
+
 add_action(
     'rest_api_init',
     function () {
+        register_rest_route('agent/v1', '/ping', [
+            'methods' => 'GET',
+            'permission_callback' => 'shoal_agent_authorize',
+            'callback' => static function (): WP_REST_Response {
+                return rest_ensure_response([
+                    'ok' => true,
+                    'wp_version' => get_bloginfo('version'),
+                    'php_version' => PHP_VERSION,
+                ]);
+            },
+        ]);
+
         register_rest_route('agent/v1', '/system-info', [
             'methods' => 'GET',
-            'permission_callback' => static function (WP_REST_Request $request): bool {
-                $provided = (string) $request->get_header('X-Agent-Token');
-                $expected = shoal_agent_token();
-
-                return $provided !== ''
-                    && $expected !== ''
-                    && hash_equals($expected, $provided);
-            },
+            'permission_callback' => 'shoal_agent_authorize',
             'callback' => static function (): WP_REST_Response {
                 require_once ABSPATH.'wp-admin/includes/plugin.php';
                 require_once ABSPATH.'wp-admin/includes/update.php';
 
+                // Force a fresh check against wordpress.org and each plugin's
+                // own update server (premium updaters hook
+                // pre_set_site_transient_update_plugins and only inject their
+                // data while this runs), then read the refreshed transients.
+                wp_version_check();
+                wp_update_plugins();
+                wp_update_themes();
+
                 $updatePlugins = get_site_transient('update_plugins');
                 $updateThemes = get_site_transient('update_themes');
+
+                $coreUpdate = null;
+                foreach (get_core_updates(['dismissed' => false]) as $coreOffer) {
+                    if (($coreOffer['response'] ?? '') === 'upgrade') {
+                        $coreUpdate = $coreOffer;
+                        break;
+                    }
+                }
 
                 $plugins = [];
                 foreach (get_plugins() as $file => $data) {
@@ -80,6 +114,8 @@ add_action(
                 return rest_ensure_response([
                     'wp_version' => get_bloginfo('version'),
                     'php_version' => PHP_VERSION,
+                    'wp_latest_version' => $coreUpdate['version'] ?? null,
+                    'core_update_available' => $coreUpdate !== null,
                     'plugins' => $plugins,
                     'themes' => $themes,
                 ]);

@@ -35,9 +35,11 @@ export type Site = {
     name: string;
     url: string;
     connection_status: 'online' | 'offline';
+    scan_status: 'idle' | 'queued' | 'running';
     wp_version: string | null;
     php_version: string | null;
     last_ping_at: string | null;
+    last_scan_at: string | null;
     plugins?: SitePlugin[];
     themes?: SiteTheme[];
 };

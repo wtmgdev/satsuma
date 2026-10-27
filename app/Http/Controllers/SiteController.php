@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\DispatchSiteScan;
+use App\Actions\DispatchSiteJob;
 use App\Http\Requests\StoreSiteRequest;
 use App\Http\Requests\UpdateSiteRequest;
+use App\Jobs\PingSiteJob;
+use App\Jobs\SyncSiteStatusJob;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Site;
+use App\ScanStatus;
+use App\Services\VersionFeedService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -31,9 +35,11 @@ class SiteController extends Controller
                     'name',
                     'url',
                     'connection_status',
+                    'scan_status',
                     'wp_version',
                     'php_version',
                     'last_ping_at',
+                    'last_scan_at',
                 ])
             : collect();
 
@@ -41,10 +47,19 @@ class SiteController extends Controller
             ? $organization->clients()->orderBy('name')->get(['id', 'name'])
             : collect();
 
-        return Inertia::render('sites/index', ['sites' => $sites, 'clients' => $clients]);
+        $versionFeed = app(VersionFeedService::class);
+        $versionInfo = $sites->mapWithKeys(
+            fn (Site $site): array => [$site->id => $versionFeed->check($site)],
+        )->all();
+
+        return Inertia::render('sites/index', [
+            'sites' => $sites,
+            'clients' => $clients,
+            'versionInfo' => $versionInfo,
+        ]);
     }
 
-    public function store(StoreSiteRequest $request, DispatchSiteScan $dispatchSiteScan): RedirectResponse
+    public function store(StoreSiteRequest $request, DispatchSiteJob $dispatchSiteJob): RedirectResponse
     {
         $organization = $request->attributes->get('currentOrganization');
 
@@ -55,12 +70,19 @@ class SiteController extends Controller
             'api_token' => $request->validated('api_token') ?: Str::random(64),
         ]);
 
-        $queued = $dispatchSiteScan->handle($site);
+        $dispatchSiteJob->handle($site, new PingSiteJob($site));
+        $scanQueued = $dispatchSiteJob->handle($site, new SyncSiteStatusJob($site));
+
+        if ($scanQueued) {
+            $site->update(['scan_status' => ScanStatus::Queued]);
+        }
 
         return redirect()->route('sites.show', $site)
             ->flashToast(
-                $queued ? 'success' : 'warning',
-                $queued ? 'Site created. First scan queued.' : 'Site created, but the scan queue is unavailable.',
+                $scanQueued ? 'success' : 'warning',
+                $scanQueued
+                    ? 'Site created. Testing connection, then scanning…'
+                    : 'Site created, but the scan queue is unavailable.',
             );
     }
 
@@ -77,6 +99,7 @@ class SiteController extends Controller
         return Inertia::render('sites/show', [
             'site' => $site,
             'agentToken' => $site->api_token,
+            'versionInfo' => app(VersionFeedService::class)->check($site),
         ]);
     }
 
@@ -116,15 +139,31 @@ class SiteController extends Controller
             ->flashToast('success', 'Site deleted.');
     }
 
-    public function scan(Request $request, Site $site, DispatchSiteScan $dispatchSiteScan): RedirectResponse
+    public function scan(Request $request, Site $site, DispatchSiteJob $dispatchSiteJob): RedirectResponse
     {
         $this->authorize('scan', $site);
 
-        $queued = $dispatchSiteScan->handle($site);
+        $queued = $dispatchSiteJob->handle($site, new SyncSiteStatusJob($site));
+
+        if ($queued) {
+            $site->update(['scan_status' => ScanStatus::Queued]);
+        }
 
         return back()->flashToast(
             $queued ? 'success' : 'warning',
             $queued ? "Scan for {$site->name} queued." : 'Queue unavailable — scan not queued.',
+        );
+    }
+
+    public function ping(Request $request, Site $site, DispatchSiteJob $dispatchSiteJob): RedirectResponse
+    {
+        $this->authorize('scan', $site);
+
+        $queued = $dispatchSiteJob->handle($site, new PingSiteJob($site));
+
+        return back()->flashToast(
+            $queued ? 'success' : 'warning',
+            $queued ? "Testing connection to {$site->name}…" : 'Queue unavailable — connection test not queued.',
         );
     }
 }

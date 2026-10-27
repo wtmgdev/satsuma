@@ -1,5 +1,6 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import {
     Check,
     Copy,
@@ -8,14 +9,22 @@ import {
     Eye,
     EyeOff,
     Pencil,
-    Plug,
+    PlugZap,
     RefreshCw,
     Trash2,
 } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
-import { index as sitesIndex, scan as siteScan, edit as siteEdit } from '@/routes/sites';
+import { PhpVersionBadge, WpVersionBadge } from '@/components/version-badges';
+import { usePollWhile } from '@/hooks/use-poll-while';
+import {
+    index as sitesIndex,
+    ping as sitePing,
+    scan as siteScan,
+    edit as siteEdit,
+} from '@/routes/sites';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import {
     Card,
     CardContent,
@@ -49,17 +58,47 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import type { Site, SitePlugin } from '@/types';
+import type { PhpInfo, WpInfo } from '@/components/version-badges';
 
 export default function SiteShow({
     site,
     agentToken,
+    versionInfo,
 }: {
     site: Site;
     agentToken: string;
+    versionInfo: {
+        php: PhpInfo;
+        wp: WpInfo;
+    };
 }) {
     const runScan = () => {
         router.post(siteScan(site).url, {}, { preserveScroll: true });
     };
+
+    const testConnection = () => {
+        router.post(sitePing(site).url, {}, { preserveScroll: true });
+    };
+
+    const working = site.scan_status !== 'idle';
+
+    usePollWhile(working || site.connection_status === 'offline', ['site']);
+
+    const previousScanStatus = useRef(site.scan_status);
+    useEffect(() => {
+        if (
+            previousScanStatus.current !== 'idle'
+            && site.scan_status === 'idle'
+        ) {
+            if (site.connection_status === 'online') {
+                toast.success('Scan complete — inventory updated.');
+            } else {
+                toast.warning('Scan finished, but the site could not be reached.');
+            }
+        }
+
+        previousScanStatus.current = site.scan_status;
+    }, [site.scan_status, site.connection_status]);
 
     return (
         <>
@@ -82,9 +121,17 @@ export default function SiteShow({
                             </CardDescription>
                         </div>
                         <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={runScan}>
-                                <RefreshCw data-icon="inline-start" />
-                                Run Scan
+                            <Button size="sm" variant="outline" onClick={testConnection}>
+                                <PlugZap data-icon="inline-start" />
+                                Test Connection
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={runScan} disabled={working}>
+                                {working ? (
+                                    <Spinner data-icon="inline-start" />
+                                ) : (
+                                    <RefreshCw data-icon="inline-start" />
+                                )}
+                                {working ? 'Scanning…' : 'Run Scan'}
                             </Button>
                             <Button size="sm" variant="outline" asChild>
                                 <a href={siteEdit(site).url}>
@@ -96,14 +143,14 @@ export default function SiteShow({
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-5">
+                        <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-6">
                             <div className="flex flex-col gap-1">
                                 <dt className="text-xs text-muted-foreground">Client</dt>
                                 <dd className="font-medium">{site.client?.name ?? '—'}</dd>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <dt className="text-xs text-muted-foreground">Status</dt>
-                                <dd>
+                                <dd className="flex items-center gap-2">
                                     <Badge
                                         variant={
                                             site.connection_status === 'online'
@@ -113,20 +160,38 @@ export default function SiteShow({
                                     >
                                         {site.connection_status}
                                     </Badge>
+                                    {working && (
+                                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                            <Spinner className="size-3" />
+                                            {site.scan_status === 'queued'
+                                                ? 'Scan queued…'
+                                                : 'Scanning…'}
+                                        </span>
+                                    )}
                                 </dd>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <dt className="text-xs text-muted-foreground">WordPress</dt>
-                                <dd className="font-medium">{site.wp_version ?? '—'}</dd>
+                                <dd>
+                                    <WpVersionBadge wp={versionInfo.wp} />
+                                </dd>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <dt className="text-xs text-muted-foreground">PHP</dt>
-                                <dd className="font-medium">{site.php_version ?? '—'}</dd>
+                                <dd>
+                                    <PhpVersionBadge php={versionInfo.php} />
+                                </dd>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <dt className="text-xs text-muted-foreground">Last Ping</dt>
                                 <dd className="font-medium">
                                     {site.last_ping_at ? timeAgo(site.last_ping_at) : 'Never'}
+                                </dd>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <dt className="text-xs text-muted-foreground">Last Scan</dt>
+                                <dd className="font-medium">
+                                    {site.last_scan_at ? timeAgo(site.last_scan_at) : 'Never'}
                                 </dd>
                             </div>
                         </dl>

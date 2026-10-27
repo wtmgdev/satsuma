@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\ConnectionStatus;
+use App\ScanStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,11 +23,14 @@ class Site extends Model
         'wp_version',
         'php_version',
         'connection_status',
+        'scan_status',
         'last_ping_at',
+        'last_scan_at',
     ];
 
     protected $attributes = [
         'connection_status' => ConnectionStatus::Offline->value,
+        'scan_status' => ScanStatus::Idle->value,
     ];
 
     protected function casts(): array
@@ -34,7 +38,9 @@ class Site extends Model
         return [
             'api_token' => 'encrypted',
             'connection_status' => ConnectionStatus::class,
+            'scan_status' => ScanStatus::class,
             'last_ping_at' => 'datetime',
+            'last_scan_at' => 'datetime',
         ];
     }
 

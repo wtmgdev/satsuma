@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\ConnectionStatus;
 use App\Models\Site;
+use App\ScanStatus;
 use App\Services\WordPressClientService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -22,9 +23,13 @@ class SyncSiteStatusJob implements ShouldQueue
 
     public function handle(WordPressClientService $client): void
     {
+        $this->site->update(['scan_status' => ScanStatus::Running]);
+
         $inventory = $client->fetchSiteInventory($this->site);
 
         if ($inventory === []) {
+            $this->site->update(['scan_status' => ScanStatus::Idle]);
+
             return;
         }
 
@@ -34,6 +39,8 @@ class SyncSiteStatusJob implements ShouldQueue
                 'php_version' => $inventory['php_version'] ?? null,
                 'connection_status' => ConnectionStatus::Online,
                 'last_ping_at' => now(),
+                'last_scan_at' => now(),
+                'scan_status' => ScanStatus::Idle,
             ]);
 
             $this->syncComponents($this->site->plugins(), $inventory['plugins'] ?? []);
@@ -69,6 +76,9 @@ class SyncSiteStatusJob implements ShouldQueue
 
     public function failed(?\Throwable $exception): void
     {
-        $this->site->update(['connection_status' => ConnectionStatus::Offline]);
+        $this->site->update([
+            'connection_status' => ConnectionStatus::Offline,
+            'scan_status' => ScanStatus::Idle,
+        ]);
     }
 }

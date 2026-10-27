@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('sites', SiteController::class)->except(['create']);
     Route::post('sites/{site}/scan', [SiteController::class, 'scan'])->name('sites.scan');
+    Route::post('sites/{site}/ping', [SiteController::class, 'ping'])->name('sites.ping');
 });
 
 require __DIR__.'/settings.php';
