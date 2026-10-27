@@ -25,7 +25,7 @@ class OrganizationController extends Controller
         $request->session()->put('current_org_id', $organization->id);
 
         return redirect()->route('dashboard')
-            ->with('success', "Organization {$organization->name} created.");
+            ->flashToast('success', "Organization {$organization->name} created.");
     }
 
     public function switch(Request $request): RedirectResponse
@@ -49,7 +49,7 @@ class OrganizationController extends Controller
 
         if (! $organization instanceof Organization) {
             return redirect()->route('dashboard')
-                ->with('success', 'Create an organization first.');
+                ->flashToast('success', 'Create an organization first.');
         }
 
         $this->authorize('view', $organization);
@@ -74,7 +74,7 @@ class OrganizationController extends Controller
         $organization = $request->attributes->get('currentOrganization');
         $organization->update($request->validated());
 
-        return back()->with('success', 'Organization updated.');
+        return back()->flashToast('success', 'Organization updated.');
     }
 
     public function addMember(AddMemberRequest $request): RedirectResponse
@@ -99,7 +99,7 @@ class OrganizationController extends Controller
             $member->id => ['role' => $request->validated('role')],
         ]);
 
-        return back()->with('success', 'Member added.');
+        return back()->flashToast('success', 'Member added.');
     }
 
     public function updateMember(Request $request, User $member): RedirectResponse
@@ -120,7 +120,7 @@ class OrganizationController extends Controller
             'role' => $validated['role'],
         ]);
 
-        return back()->with('success', 'Member role updated.');
+        return back()->flashToast('success', 'Member role updated.');
     }
 
     public function removeMember(Request $request, User $member): RedirectResponse
@@ -135,6 +135,6 @@ class OrganizationController extends Controller
 
         $organization->members()->detach($member->id);
 
-        return back()->with('success', 'Member removed.');
+        return back()->flashToast('success', 'Member removed.');
     }
 }

@@ -58,7 +58,7 @@ class SiteController extends Controller
         SyncSiteStatusJob::dispatch($site);
 
         return redirect()->route('sites.show', $site)
-            ->with('success', 'Site created. First scan queued.');
+            ->flashToast('success', 'Site created. First scan queued.');
     }
 
     public function show(Request $request, Site $site): Response
@@ -100,7 +100,7 @@ class SiteController extends Controller
         $site->update($data);
 
         return redirect()->route('sites.show', $site)
-            ->with('success', 'Site updated.');
+            ->flashToast('success', 'Site updated.');
     }
 
     public function destroy(Request $request, Site $site): RedirectResponse
@@ -110,7 +110,7 @@ class SiteController extends Controller
         $site->delete();
 
         return redirect()->route('sites.index')
-            ->with('success', 'Site deleted.');
+            ->flashToast('success', 'Site deleted.');
     }
 
     public function scan(Request $request, Site $site): RedirectResponse
@@ -119,6 +119,6 @@ class SiteController extends Controller
 
         SyncSiteStatusJob::dispatch($site);
 
-        return back()->with('success', "Scan for {$site->name} queued.");
+        return back()->flashToast('success', "Scan for {$site->name} queued.");
     }
 }

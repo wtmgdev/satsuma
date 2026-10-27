@@ -36,7 +36,7 @@ class ClientController extends Controller
         $organization->clients()->create($request->validated());
 
         return redirect()->route('clients.index')
-            ->with('success', 'Client created.');
+            ->flashToast('success', 'Client created.');
     }
 
     public function edit(Request $request, Client $client): Response
@@ -55,7 +55,7 @@ class ClientController extends Controller
         $client->update($request->validated());
 
         return redirect()->route('clients.index')
-            ->with('success', 'Client updated.');
+            ->flashToast('success', 'Client updated.');
     }
 
     public function destroy(Request $request, Client $client): RedirectResponse
@@ -65,6 +65,6 @@ class ClientController extends Controller
         $client->delete();
 
         return redirect()->route('clients.index')
-            ->with('success', 'Client deleted.');
+            ->flashToast('success', 'Client deleted.');
     }
 }
