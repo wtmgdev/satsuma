@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\DispatchSiteScan;
 use App\Http\Requests\StoreSiteRequest;
 use App\Http\Requests\UpdateSiteRequest;
-use App\Jobs\SyncSiteStatusJob;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Site;
@@ -44,7 +44,7 @@ class SiteController extends Controller
         return Inertia::render('sites/index', ['sites' => $sites, 'clients' => $clients]);
     }
 
-    public function store(StoreSiteRequest $request): RedirectResponse
+    public function store(StoreSiteRequest $request, DispatchSiteScan $dispatchSiteScan): RedirectResponse
     {
         $organization = $request->attributes->get('currentOrganization');
 
@@ -55,10 +55,13 @@ class SiteController extends Controller
             'api_token' => $request->validated('api_token') ?: Str::random(64),
         ]);
 
-        SyncSiteStatusJob::dispatch($site);
+        $queued = $dispatchSiteScan->handle($site);
 
         return redirect()->route('sites.show', $site)
-            ->flashToast('success', 'Site created. First scan queued.');
+            ->flashToast(
+                $queued ? 'success' : 'warning',
+                $queued ? 'Site created. First scan queued.' : 'Site created, but the scan queue is unavailable.',
+            );
     }
 
     public function show(Request $request, Site $site): Response
@@ -113,12 +116,15 @@ class SiteController extends Controller
             ->flashToast('success', 'Site deleted.');
     }
 
-    public function scan(Request $request, Site $site): RedirectResponse
+    public function scan(Request $request, Site $site, DispatchSiteScan $dispatchSiteScan): RedirectResponse
     {
         $this->authorize('scan', $site);
 
-        SyncSiteStatusJob::dispatch($site);
+        $queued = $dispatchSiteScan->handle($site);
 
-        return back()->flashToast('success', "Scan for {$site->name} queued.");
+        return back()->flashToast(
+            $queued ? 'success' : 'warning',
+            $queued ? "Scan for {$site->name} queued." : 'Queue unavailable — scan not queued.',
+        );
     }
 }

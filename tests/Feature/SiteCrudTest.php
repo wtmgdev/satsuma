@@ -38,6 +38,39 @@ it('creates a site with a generated token and queues the first scan', function (
     Queue::assertPushed(SyncSiteStatusJob::class);
 });
 
+it('still creates the site when the queue backend is down', function () {
+    Illuminate\Support\Facades\Queue::shouldReceive('connection')
+        ->andThrow(new RuntimeException('Connection refused'));
+    Illuminate\Support\Facades\Exceptions::fake();
+
+    [$user, $organization] = userWithOrg();
+
+    $response = $this->actingAs($user)->post('/sites', [
+        'name' => 'Acme Blog',
+        'url' => 'https://acme.test',
+    ]);
+
+    expect(Site::where('url', 'https://acme.test')->exists())->toBeTrue()
+        ->and($response->headers->get('Location'))->toEndWith('/sites/1');
+
+    Illuminate\Support\Facades\Exceptions::assertReported(RuntimeException::class);
+});
+
+it('still responds when a scan is requested while the queue is down', function () {
+    [$user, $organization] = userWithOrg();
+    $site = Site::factory()->for($organization)->create();
+
+    Illuminate\Support\Facades\Queue::shouldReceive('connection')
+        ->andThrow(new RuntimeException('Connection refused'));
+    Illuminate\Support\Facades\Exceptions::fake();
+
+    $this->actingAs($user)
+        ->post("/sites/{$site->id}/scan")
+        ->assertRedirect();
+
+    Illuminate\Support\Facades\Exceptions::assertReported(RuntimeException::class);
+});
+
 it('validates duplicate site urls', function () {
     [$user, $organization] = userWithOrg();
     Site::factory()->for($organization)->create(['url' => 'https://acme.test']);
