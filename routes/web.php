@@ -3,6 +3,7 @@
 use App\Http\Controllers\AgentPluginController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\SiteController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sites', SiteController::class)->except(['create']);
     Route::post('sites/{site}/scan', [SiteController::class, 'scan'])->name('sites.scan');
     Route::post('sites/{site}/ping', [SiteController::class, 'ping'])->name('sites.ping');
+
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read', [NotificationController::class, 'markAllRead'])->name('notifications.read');
 });
 
 require __DIR__.'/settings.php';

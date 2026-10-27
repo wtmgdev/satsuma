@@ -1,6 +1,7 @@
 <?php
 
 use App\ConnectionStatus;
+use App\Actions\NotifyOrganizationMembers;
 use App\Jobs\SyncSiteStatusJob;
 use App\Models\Site;
 use App\Models\SitePlugin;
@@ -57,7 +58,7 @@ it('syncs site status and inventory on the job', function () {
         'example.test/wp-json/agent/v1/system-info' => Http::response(siteInventoryPayload()),
     ]);
 
-    (new SyncSiteStatusJob($site))->handle(new WordPressClientService);
+    (new SyncSiteStatusJob($site))->handle(new WordPressClientService, app(NotifyOrganizationMembers::class));
 
     $site->refresh();
 

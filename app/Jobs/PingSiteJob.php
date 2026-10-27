@@ -2,8 +2,11 @@
 
 namespace App\Jobs;
 
+use App\Actions\NotifyOrganizationMembers;
 use App\ConnectionStatus;
 use App\Models\Site;
+use App\Notifications\SiteBackOnline;
+use App\Notifications\SiteOffline;
 use App\Services\WordPressClientService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -19,11 +22,17 @@ class PingSiteJob implements ShouldQueue
         //
     }
 
-    public function handle(WordPressClientService $client): void
+    public function handle(WordPressClientService $client, NotifyOrganizationMembers $notify): void
     {
+        $wasOnline = $this->site->connection_status === ConnectionStatus::Online;
+
         $result = $client->pingSite($this->site);
 
         if (! ($result['ok'] ?? false)) {
+            if ($wasOnline) {
+                $notify->handle($this->site, new SiteOffline($this->site));
+            }
+
             return;
         }
 
@@ -33,6 +42,10 @@ class PingSiteJob implements ShouldQueue
             'connection_status' => ConnectionStatus::Online,
             'last_ping_at' => now(),
         ]);
+
+        if (! $wasOnline) {
+            $notify->handle($this->site, new SiteBackOnline($this->site));
+        }
     }
 
     public function failed(?\Throwable $exception): void

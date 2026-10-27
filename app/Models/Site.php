@@ -26,6 +26,7 @@ class Site extends Model
         'scan_status',
         'last_ping_at',
         'last_scan_at',
+        'notified_vulnerabilities',
     ];
 
     protected $attributes = [
@@ -41,6 +42,7 @@ class Site extends Model
             'scan_status' => ScanStatus::class,
             'last_ping_at' => 'datetime',
             'last_scan_at' => 'datetime',
+            'notified_vulnerabilities' => 'array',
         ];
     }
 

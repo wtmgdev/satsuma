@@ -2,9 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Actions\NotifyOrganizationMembers;
 use App\ConnectionStatus;
 use App\Models\Site;
+use App\Notifications\CriticalVulnerabilitiesFound;
+use App\Notifications\SiteBackOnline;
+use App\Notifications\SiteOffline;
 use App\ScanStatus;
+use App\Services\VulnerabilityService;
 use App\Services\WordPressClientService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -21,14 +26,20 @@ class SyncSiteStatusJob implements ShouldQueue
         //
     }
 
-    public function handle(WordPressClientService $client): void
+    public function handle(WordPressClientService $client, NotifyOrganizationMembers $notify): void
     {
+        $wasOnline = $this->site->connection_status === ConnectionStatus::Online;
+
         $this->site->update(['scan_status' => ScanStatus::Running]);
 
         $inventory = $client->fetchSiteInventory($this->site);
 
         if ($inventory === []) {
             $this->site->update(['scan_status' => ScanStatus::Idle]);
+
+            if ($wasOnline) {
+                $notify->handle($this->site, new SiteOffline($this->site));
+            }
 
             return;
         }
@@ -46,6 +57,42 @@ class SyncSiteStatusJob implements ShouldQueue
             $this->syncComponents($this->site->plugins(), $inventory['plugins'] ?? []);
             $this->syncComponents($this->site->themes(), $inventory['themes'] ?? []);
         });
+
+        if (! $wasOnline) {
+            $notify->handle($this->site, new SiteBackOnline($this->site));
+        }
+
+        $this->notifyNewVulnerabilities($notify);
+    }
+
+    /**
+     * Notify the organization about critical/high vulnerabilities that were
+     * not part of the last notification.
+     */
+    private function notifyNewVulnerabilities(NotifyOrganizationMembers $notify): void
+    {
+        $this->site->refresh()->load(['plugins', 'themes']);
+
+        $vulnerabilities = app(VulnerabilityService::class)->forSite($this->site);
+
+        $actionable = collect($vulnerabilities)
+            ->filter(fn (array $found) => in_array(VulnerabilityService::worstSeverity($found), ['critical', 'high']));
+
+        if ($actionable->isEmpty()) {
+            return;
+        }
+
+        $notified = collect($this->site->notified_vulnerabilities ?? []);
+
+        $fresh = $actionable->filter(fn (array $found, string $key) => ! $notified->contains($key));
+
+        if ($fresh->isEmpty()) {
+            return;
+        }
+
+        $notify->handle($this->site, new CriticalVulnerabilitiesFound($this->site, $fresh->all()));
+
+        $this->site->update(['notified_vulnerabilities' => $actionable->keys()->values()->all()]);
     }
 
     /**
