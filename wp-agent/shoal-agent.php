@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Shoal Agent
  * Description: Companion REST agent for the Shoal WordPress management platform. Exposes read-only system info secured by a bearer token.
- * Version: 0.6.0
+ * Version: 0.7.0
  * Requires PHP: 7.4
  * Author: Shoal
  * Text Domain: shoal-agent
@@ -204,77 +204,87 @@ function shoal_agent_render_settings_page(): void
 
     $constantDefined = defined('SHOAL_AGENT_TOKEN') && is_string(SHOAL_AGENT_TOKEN) && SHOAL_AGENT_TOKEN !== '';
     $token = shoal_agent_token();
+    $assets = plugins_url('assets/', __FILE__);
+    $connected = $token !== '';
     ?>
-    <div class="wrap">
-        <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+    <div class="wrap shoal-agent-wrap" style="max-width:1100px;">
+        <div style="margin:20px 0 0 -22px;">
+            <img src="<?php echo esc_url($assets.'banner-772x250.png'); ?>"
+                 srcset="<?php echo esc_url($assets.'banner-1544x500.png'); ?> 2x"
+                 alt="<?php esc_attr_e('Shoal — WordPress fleet management', 'shoal-agent'); ?>"
+                 style="width:100%;max-width:772px;height:auto;display:block;border-radius:8px;" />
+        </div>
 
-        <p>
-            <?php
-            echo esc_html__(
-                'Paste the API token generated for this site in your Shoal dashboard (site page → Agent Setup).',
-                'shoal-agent'
-            );
-            ?>
-        </p>
+        <div style="display:flex;gap:24px;align-items:flex-start;margin-top:24px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:380px;background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:24px;">
+                <h2 style="margin-top:0;"><?php esc_html_e('Connect this site to Shoal', 'shoal-agent'); ?></h2>
+                <p><?php esc_html_e('Paste the API token generated for this site in your Shoal dashboard (site page → Agent Setup).', 'shoal-agent'); ?></p>
 
-        <?php if ($constantDefined) : ?>
-            <div class="notice notice-warning">
-                <p>
-                    <?php
-                    echo esc_html__(
-                        'The SHOAL_AGENT_TOKEN constant is defined, so it overrides the token stored below.',
-                        'shoal-agent'
-                    );
-                    ?>
+                <?php if ($connected) : ?>
+                    <p>
+                        <span style="display:inline-flex;align-items:center;gap:6px;background:#edf9f0;color:#1a7f37;border:1px solid #b8e6c4;border-radius:999px;padding:4px 12px;font-size:13px;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#1a7f37;display:inline-block;"></span>
+                            <?php esc_html_e('Token configured', 'shoal-agent'); ?>
+                        </span>
+                    </p>
+                <?php endif; ?>
+
+                <?php if ($constantDefined) : ?>
+                    <div class="notice notice-warning inline">
+                        <p><?php esc_html_e('The SHOAL_AGENT_TOKEN constant is defined, so it overrides the token stored below.', 'shoal-agent'); ?></p>
+                    </div>
+                <?php endif; ?>
+
+                <form action="options.php" method="post">
+                    <?php settings_fields('shoal_agent'); ?>
+                    <table class="form-table" role="presentation" style="margin-top:0;">
+                        <tr>
+                            <th scope="row" style="padding-left:0;">
+                                <label for="shoal_agent_token"><?php esc_html_e('API token', 'shoal-agent'); ?></label>
+                            </th>
+                            <td>
+                                <input
+                                    type="text"
+                                    id="shoal_agent_token"
+                                    name="<?php echo esc_attr(SHOAL_AGENT_OPTION); ?>"
+                                    value="<?php echo esc_attr($token); ?>"
+                                    class="regular-text code"
+                                    autocomplete="off"
+                                    spellcheck="false"
+                                />
+                                <p class="description">
+                                    <?php
+                                    if ($connected) {
+                                        $masked = str_repeat('•', max(4, strlen($token) - 4)).substr($token, -4);
+                                        echo esc_html(sprintf(
+                                            /* translators: %s: masked token preview */
+                                            __('Token is set (%s). The endpoint is authenticated with it.', 'shoal-agent'),
+                                            $masked
+                                        ));
+                                    } else {
+                                        esc_html_e('No token stored yet — scans from Shoal will be rejected until one is set.', 'shoal-agent');
+                                    }
+                                    ?>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                    <?php submit_button(__('Save token', 'shoal-agent')); ?>
+                </form>
+
+                <h3 style="margin-bottom:4px;"><?php esc_html_e('Agent endpoint', 'shoal-agent'); ?></h3>
+                <p><code><?php echo esc_url(rest_url('agent/v1/system-info')); ?></code></p>
+            </div>
+
+            <div style="flex:1;min-width:380px;">
+                <img src="<?php echo esc_url($assets.'screenshot-1.png'); ?>"
+                     alt="<?php esc_attr_e('The Shoal dashboard', 'shoal-agent'); ?>"
+                     style="width:100%;height:auto;display:block;border-radius:8px;border:1px solid #dcdcde;" />
+                <p style="color:#646970;font-size:13px;margin-top:8px;">
+                    <?php esc_html_e('Sites, updates and security status in one place — from your Shoal dashboard.', 'shoal-agent'); ?>
                 </p>
             </div>
-        <?php endif; ?>
-
-        <form action="options.php" method="post">
-            <?php
-            settings_fields('shoal_agent');
-            ?>
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th scope="row">
-                        <label for="shoal_agent_token"><?php esc_html_e('API token', 'shoal-agent'); ?></label>
-                    </th>
-                    <td>
-                        <input
-                            type="text"
-                            id="shoal_agent_token"
-                            name="<?php echo esc_attr(SHOAL_AGENT_OPTION); ?>"
-                            value="<?php echo esc_attr($token); ?>"
-                            class="regular-text code"
-                            autocomplete="off"
-                            spellcheck="false"
-                        />
-                        <p class="description">
-                            <?php
-                            if ($token !== '') {
-                                $masked = str_repeat('•', max(4, strlen($token) - 4)).substr($token, -4);
-                                echo esc_html(
-                                    sprintf(
-                                        /* translators: %s: masked token preview */
-                                        __('Token is set (%s). The endpoint is authenticated with it.', 'shoal-agent'),
-                                        $masked
-                                    )
-                                );
-                            } else {
-                                esc_html_e('No token stored yet — scans from Shoal will be rejected until one is set.', 'shoal-agent');
-                            }
-                            ?>
-                        </p>
-                    </td>
-                </tr>
-            </table>
-            <?php submit_button(); ?>
-        </form>
-
-        <h2><?php esc_html_e('Endpoint', 'shoal-agent'); ?></h2>
-        <p>
-            <code><?php echo esc_url(rest_url('agent/v1/system-info')); ?></code>
-        </p>
+        </div>
     </div>
     <?php
 }
