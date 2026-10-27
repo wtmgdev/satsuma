@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Site;
 use App\Models\SitePlugin;
 use App\Models\SiteTheme;
@@ -38,6 +39,7 @@ class DashboardController extends Controller
                 'pendingUpdates' => $pendingUpdates,
             ],
             'sites' => $sites,
+            'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 }

@@ -1,6 +1,8 @@
 import { Head, router } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
-import { Globe, Plug, RefreshCw, WifiOff } from 'lucide-react';
+import { Globe, Plug, Plus, RefreshCw, WifiOff } from 'lucide-react';
+import { useState } from 'react';
+import { CreateSiteDialog } from '@/components/create-site-dialog';
 import { dashboard } from '@/routes';
 import { scan as siteScan, show as siteShow } from '@/routes/sites';
 import { Badge } from '@/components/ui/badge';
@@ -28,14 +30,17 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import type { DashboardStats, Site } from '@/types';
+import type { Client, DashboardStats, Site } from '@/types';
 
 type Props = {
     stats: DashboardStats;
     sites: Site[];
+    clients: Client[];
 };
 
-export default function Dashboard({ stats, sites }: Props) {
+export default function Dashboard({ stats, sites, clients }: Props) {
+    const [createOpen, setCreateOpen] = useState(false);
+
     const runScan = (site: Site) => {
         router.post(siteScan(site).url, {}, { preserveScroll: true });
     };
@@ -92,8 +97,9 @@ export default function Dashboard({ stats, sites }: Props) {
                                     </EmptyDescription>
                                 </EmptyHeader>
                                 <EmptyContent>
-                                    <Button asChild variant="outline">
-                                        <a href="/admin/sites">Add a site in the admin panel</a>
+                                    <Button onClick={() => setCreateOpen(true)}>
+                                        <Plus data-icon="inline-start" />
+                                        Add your first site
                                     </Button>
                                 </EmptyContent>
                             </Empty>
@@ -180,6 +186,12 @@ export default function Dashboard({ stats, sites }: Props) {
                         )}
                     </CardContent>
                 </Card>
+
+                <CreateSiteDialog
+                    clients={clients}
+                    open={createOpen}
+                    onOpenChange={setCreateOpen}
+                />
             </div>
         </>
     );

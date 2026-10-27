@@ -2,7 +2,7 @@ import { Form, Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Globe, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
-import InputError from '@/components/input-error';
+import { CreateSiteDialog } from '@/components/create-site-dialog';
 import { dashboard } from '@/routes';
 import {
     edit as siteEdit,
@@ -25,7 +25,6 @@ import {
     DialogContent,
     DialogDescription,
     DialogFooter,
-    DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
@@ -37,21 +36,7 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
-} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -86,24 +71,17 @@ export default function SitesIndex({ sites, clients }: Props) {
                                 All WordPress sites connected to this account.
                             </CardDescription>
                         </div>
-                        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                            <DialogTrigger asChild>
+                        <CreateSiteDialog
+                            clients={clients}
+                            open={createOpen}
+                            onOpenChange={setCreateOpen}
+                            trigger={
                                 <Button size="sm">
                                     <Plus data-icon="inline-start" />
                                     New Site
                                 </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Add Site</DialogTitle>
-                                    <DialogDescription>
-                                        Connect a WordPress site with the Shoal
-                                        agent plugin.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <CreateSiteForm clients={clients} />
-                            </DialogContent>
-                        </Dialog>
+                            }
+                        />
                     </CardHeader>
                     <CardContent>
                         {sites.length === 0 ? (
@@ -223,90 +201,6 @@ export default function SitesIndex({ sites, clients }: Props) {
                 </Card>
             </div>
         </>
-    );
-}
-
-function CreateSiteForm({ clients }: { clients: Client[] }) {
-    return (
-        <Form {...SiteController.store.form()} className="flex flex-col gap-6">
-            {({ processing, errors }) => (
-                <>
-                    <FieldGroup>
-                        <Field>
-                            <FieldLabel htmlFor="create-site-name">Site name</FieldLabel>
-                            <Input
-                                id="create-site-name"
-                                name="name"
-                                required
-                                placeholder="My WordPress Site"
-                            />
-                            <InputError message={errors.name} />
-                        </Field>
-
-                        <Field>
-                            <FieldLabel htmlFor="create-site-url">Site URL</FieldLabel>
-                            <Input
-                                id="create-site-url"
-                                name="url"
-                                type="url"
-                                required
-                                placeholder="https://example.com"
-                            />
-                            <FieldDescription>
-                                The base URL of the WordPress installation.
-                            </FieldDescription>
-                            <InputError message={errors.url} />
-                        </Field>
-
-                        <Field>
-                            <FieldLabel htmlFor="create-site-client">Client</FieldLabel>
-                            <Select name="client_id">
-                                <SelectTrigger id="create-site-client" className="w-full">
-                                    <SelectValue placeholder="No client" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {clients.map((client) => (
-                                            <SelectItem key={client.id} value={String(client.id)}>
-                                                {client.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <FieldDescription>
-                                Optional. Assign this site to a client.
-                            </FieldDescription>
-                            <InputError message={errors.client_id} />
-                        </Field>
-
-                        <Field>
-                            <FieldLabel htmlFor="create-site-token">API token</FieldLabel>
-                            <Input
-                                id="create-site-token"
-                                name="api_token"
-                                placeholder="Leave blank to auto-generate"
-                            />
-                            <FieldDescription>
-                                Set this token in the Shoal agent plugin on the
-                                WordPress site.
-                            </FieldDescription>
-                            <InputError message={errors.api_token} />
-                        </Field>
-                    </FieldGroup>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button type="button" variant="outline">
-                                Cancel
-                            </Button>
-                        </DialogClose>
-                        <Button type="submit" disabled={processing}>
-                            Create Site
-                        </Button>
-                    </DialogFooter>
-                </>
-            )}
-        </Form>
     );
 }
 
