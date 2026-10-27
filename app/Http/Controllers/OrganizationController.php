@@ -43,11 +43,14 @@ class OrganizationController extends Controller
         return back();
     }
 
-    public function edit(Request $request): Response
+    public function edit(Request $request): Response|RedirectResponse
     {
         $organization = $request->attributes->get('currentOrganization');
 
-        abort_unless($organization instanceof Organization, 404);
+        if (! $organization instanceof Organization) {
+            return redirect()->route('dashboard')
+                ->with('success', 'Create an organization first.');
+        }
 
         $this->authorize('view', $organization);
 

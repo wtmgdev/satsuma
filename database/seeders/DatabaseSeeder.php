@@ -17,13 +17,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $admin = User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@shoal.test',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@shoal.test'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ],
+        );
 
-        Organization::createWithOwner($admin, 'Shoal Demo');
+        if ($admin->organizations()->count() === 0) {
+            Organization::createWithOwner($admin, 'Shoal Demo');
+        }
     }
 }

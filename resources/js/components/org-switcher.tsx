@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import OrganizationController from '@/actions/App/Http/Controllers/OrganizationController';
-import AppLogo from '@/components/app-logo';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -52,8 +52,12 @@ export function OrgSwitcher() {
                             onClick={() => setCreateOpen(true)}
                             tooltip={{ children: 'Create organization' }}
                         >
-                            <AppLogo />
-                            <span className="text-sm font-medium">Create organization</span>
+                            <span className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+                                <AppLogoIcon className="size-5 fill-current" />
+                            </span>
+                            <span className="truncate text-sm font-medium">
+                                Create organization
+                            </span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>

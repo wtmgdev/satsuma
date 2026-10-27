@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Building2,
@@ -48,32 +48,37 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const settingsNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: editProfile(),
-        icon: UserRoundCog,
-    },
-    {
-        title: 'Security',
-        href: editSecurity(),
-        icon: ShieldCheck,
-    },
-    {
-        title: 'Organization',
-        href: '/settings/organization',
-        icon: Building2,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: Palette,
-    },
-];
-
 export function AppSidebar() {
     const { isCurrentOrParentUrl } = useCurrentUrl();
     const inSettings = isCurrentOrParentUrl('/settings');
+    const hasOrganization = usePage().props.currentOrganization !== null;
+
+    const settingsNavItems = [
+        {
+            title: 'Profile',
+            href: editProfile(),
+            icon: UserRoundCog,
+        },
+        {
+            title: 'Security',
+            href: editSecurity(),
+            icon: ShieldCheck,
+        },
+        ...(hasOrganization
+            ? [
+                {
+                    title: 'Organization',
+                    href: '/settings/organization',
+                    icon: Building2,
+                },
+            ]
+            : []),
+        {
+            title: 'Appearance',
+            href: editAppearance(),
+            icon: Palette,
+        },
+    ];
 
     return (
         <Sidebar collapsible="icon" variant="inset">
