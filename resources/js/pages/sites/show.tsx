@@ -287,7 +287,7 @@ function ComponentTable({
     vulnerabilities: VulnerabilitySummary;
 }) {
     return (
-        <Table>
+        <Table className="[&_tr]:border-border/40">
             <TableHeader>
                 <TableRow>
                     <TableHead>Name</TableHead>
