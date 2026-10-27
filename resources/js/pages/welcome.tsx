@@ -6,7 +6,6 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -14,7 +13,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { dashboard, login, register } from '@/routes';
+import { dashboard, login } from '@/routes';
 
 const features = [
     {
@@ -51,9 +50,7 @@ export default function Welcome() {
                 <div className="relative flex min-h-screen flex-col">
                     <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
                         <div className="flex items-center gap-2.5">
-                            <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                                <AppLogoIcon className="size-5 fill-current" />
-                            </span>
+                            <AppLogoIcon className="size-7 text-primary" />
                             <span className="text-sm font-semibold tracking-tight">
                                 Shoal
                             </span>
@@ -68,11 +65,8 @@ export default function Welcome() {
                                 </Button>
                             ) : (
                                 <>
-                                    <Button size="sm" variant="ghost" asChild>
-                                        <Link href={login()}>Log in</Link>
-                                    </Button>
                                     <Button size="sm" asChild>
-                                        <Link href={register()}>Sign up</Link>
+                                        <Link href={login()}>Log in</Link>
                                     </Button>
                                 </>
                             )}
@@ -81,9 +75,6 @@ export default function Welcome() {
 
                     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6">
                         <section className="flex flex-col items-center gap-6 py-24 text-center md:py-32">
-                            <Badge variant="outline" className="bg-card">
-                                Self-hosted WordPress management
-                            </Badge>
                             <h1 className="max-w-3xl text-balance text-4xl font-semibold tracking-tight md:text-6xl">
                                 Every WordPress site.
                                 <br />
@@ -105,38 +96,35 @@ export default function Welcome() {
                                         </Link>
                                     </Button>
                                 ) : (
-                                    <>
-                                        <Button asChild>
-                                            <Link href={register()}>
-                                                Get started
-                                                <ArrowRight data-icon="inline-end" />
-                                            </Link>
-                                        </Button>
-                                        <Button variant="outline" asChild>
-                                            <Link href={login()}>Log in</Link>
-                                        </Button>
-                                    </>
+                                    <Button asChild>
+                                        <Link href={login()}>
+                                            Log in
+                                            <ArrowRight data-icon="inline-end" />
+                                        </Link>
+                                    </Button>
                                 )}
                             </div>
                         </section>
 
-                        <section className="grid gap-4 pb-24 md:grid-cols-3">
-                            {features.map((feature) => (
-                                <Card key={feature.title} className="gap-3">
-                                    <CardHeader>
-                                        <span className="flex size-9 items-center justify-center rounded-md bg-muted">
-                                            <feature.icon className="text-muted-foreground" />
-                                        </span>
-                                        <CardTitle className="text-base">
-                                            {feature.title}
-                                        </CardTitle>
-                                        <CardDescription>
-                                            {feature.description}
-                                        </CardDescription>
-                                    </CardHeader>
-                                </Card>
-                            ))}
-                        </section>
+                        {false && (
+                            <section className="grid gap-4 pb-24 md:grid-cols-3">
+                                {features.map((feature) => (
+                                    <Card key={feature.title} className="gap-3">
+                                        <CardHeader>
+                                            <span className="flex size-9 items-center justify-center rounded-md bg-muted">
+                                                <feature.icon className="text-muted-foreground" />
+                                            </span>
+                                            <CardTitle className="text-base">
+                                                {feature.title}
+                                            </CardTitle>
+                                            <CardDescription>
+                                                {feature.description}
+                                            </CardDescription>
+                                        </CardHeader>
+                                    </Card>
+                                ))}
+                            </section>
+                        )}
                     </main>
 
                     <footer className="mx-auto flex w-full max-w-6xl items-center justify-between border-t border-border px-6 py-6 text-xs text-muted-foreground">
