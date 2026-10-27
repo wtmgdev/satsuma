@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
-import { Globe, Plug, Plus, RefreshCw, WifiOff } from 'lucide-react';
+import { Download, Globe, Plug, Plus, RefreshCw, WifiOff } from 'lucide-react';
 import { useState } from 'react';
 import { CreateSiteDialog } from '@/components/create-site-dialog';
 import { dashboard } from '@/routes';
@@ -36,9 +36,10 @@ type Props = {
     stats: DashboardStats;
     sites: Site[];
     clients: Client[];
+    agentPluginVersion: string | null;
 };
 
-export default function Dashboard({ stats, sites, clients }: Props) {
+export default function Dashboard({ stats, sites, clients, agentPluginVersion }: Props) {
     const [createOpen, setCreateOpen] = useState(false);
 
     const runScan = (site: Site) => {
@@ -77,11 +78,19 @@ export default function Dashboard({ stats, sites, clients }: Props) {
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Sites</CardTitle>
-                        <CardDescription>
-                            All WordPress sites connected to this account.
-                        </CardDescription>
+                    <CardHeader className="flex flex-row items-start justify-between">
+                        <div className="flex flex-col gap-1.5">
+                            <CardTitle>Sites</CardTitle>
+                            <CardDescription>
+                                All WordPress sites connected to this account.
+                            </CardDescription>
+                        </div>
+                        <Button size="sm" variant="outline" asChild title="Always the latest version">
+                            <a href="/agent-plugin/download">
+                                <Download data-icon="inline-start" />
+                                Agent plugin{agentPluginVersion ? ` v${agentPluginVersion}` : ''}
+                            </a>
+                        </Button>
                     </CardHeader>
                     <CardContent>
                         {sites.length === 0 ? (

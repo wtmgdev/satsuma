@@ -40,6 +40,7 @@ class DashboardController extends Controller
             ],
             'sites' => $sites,
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
+            'agentPluginVersion' => AgentPluginController::version(),
         ]);
     }
 }
