@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('vulnfeed:refresh')->dailyAt('03:17')->withoutOverlapping();
+Schedule::command('sites:ping')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('sites:whois')->dailyAt('04:05')->withoutOverlapping();

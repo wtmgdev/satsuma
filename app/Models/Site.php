@@ -27,6 +27,8 @@ class Site extends Model
         'last_ping_at',
         'last_scan_at',
         'notified_vulnerabilities',
+        'whois',
+        'whois_checked_at',
     ];
 
     protected $attributes = [
@@ -43,6 +45,8 @@ class Site extends Model
             'last_ping_at' => 'datetime',
             'last_scan_at' => 'datetime',
             'notified_vulnerabilities' => 'array',
+            'whois' => 'array',
+            'whois_checked_at' => 'datetime',
         ];
     }
 

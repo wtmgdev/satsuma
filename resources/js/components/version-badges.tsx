@@ -57,6 +57,6 @@ export function WpVersionBadge({ wp }: { wp: WpInfo }) {
 
 export type { PhpInfo, WpInfo };
 
-function versionCompare(a: string, b: string): number {
+export function versionCompare(a: string, b: string): number {
     return a.localeCompare(b, 'en', { numeric: true });
 }

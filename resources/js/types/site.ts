@@ -40,6 +40,13 @@ export type Site = {
     php_version: string | null;
     last_ping_at: string | null;
     last_scan_at: string | null;
+    whois?: {
+        domain?: string;
+        registrar?: string | null;
+        registered_at?: string | null;
+        expires_at?: string | null;
+        nameservers?: string[];
+    } | null;
     plugins?: SitePlugin[];
     themes?: SiteTheme[];
 };

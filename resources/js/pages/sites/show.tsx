@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
 import InputError from '@/components/input-error';
-import { PhpVersionBadge, WpVersionBadge } from '@/components/version-badges';
+import { PhpLogo, WpLogo } from '@/components/brand-icons';
 import { usePollWhile } from '@/hooks/use-poll-while';
 import {
     index as sitesIndex,
@@ -74,8 +74,46 @@ import {
 } from '@/components/ui/table';
 import type { Client, Site, SitePlugin } from '@/types';
 import type { PhpInfo, WpInfo } from '@/components/version-badges';
+import { versionCompare } from '@/components/version-badges';
 
 type VulnerabilitySummary = Record<string, { severity: string; count: number }>;
+
+function WpVersionText({ wp }: { wp: WpInfo }) {
+    if (!wp.installed) {
+        return <span className="text-muted-foreground">—</span>;
+    }
+    return (
+        <span className="flex items-baseline gap-1.5">
+            {wp.installed}
+            {wp.update_available && wp.latest && (
+                <span className="text-sm font-normal text-warning">
+                    → {wp.latest}
+                </span>
+            )}
+        </span>
+    );
+}
+
+function PhpVersionText({ php }: { php: PhpInfo }) {
+    if (!php.installed) {
+        return <span className="text-muted-foreground">—</span>;
+    }
+    return (
+        <span className="flex items-baseline gap-1.5">
+            {php.installed}
+            {php.eol ? (
+                <span className="text-sm font-normal text-destructive">EOL</span>
+            ) : (
+                php.latest_patch
+                && versionCompare(php.installed, php.latest_patch) < 0 && (
+                    <span className="text-sm font-normal text-warning">
+                        → {php.latest_patch}
+                    </span>
+                )
+            )}
+        </span>
+    );
+}
 
 export default function SiteShow({
     site,
@@ -132,15 +170,21 @@ export default function SiteShow({
                         <div className="flex flex-col gap-1.5">
                             <CardTitle>{site.name}</CardTitle>
                             <CardDescription>
-                                <a
-                                    href={site.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex items-center gap-1 hover:underline"
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 px-2.5 text-xs font-normal"
+                                    asChild
                                 >
-                                    {site.url}
-                                    <ExternalLink />
-                                </a>
+                                    <a
+                                        href={site.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        {site.url.replace(/^https?:\/\//, '')}
+                                        <ExternalLink data-icon="inline-end" />
+                                    </a>
+                                </Button>
                             </CardDescription>
                         </div>
                         <div className="flex gap-2">
@@ -195,14 +239,16 @@ export default function SiteShow({
                             </div>
                             <div className="flex flex-col gap-1">
                                 <dt className="text-xs text-muted-foreground">WordPress</dt>
-                                <dd>
-                                    <WpVersionBadge wp={versionInfo.wp} />
+                                <dd className="flex items-center gap-1.5 text-base font-medium">
+                                    <WpLogo className="size-4 shrink-0 text-muted-foreground" />
+                                    <WpVersionText wp={versionInfo.wp} />
                                 </dd>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <dt className="text-xs text-muted-foreground">PHP</dt>
-                                <dd>
-                                    <PhpVersionBadge php={versionInfo.php} />
+                                <dd className="flex items-center gap-1.5 text-base font-medium">
+                                    <PhpLogo className="size-4 shrink-0 text-muted-foreground" />
+                                    <PhpVersionText php={versionInfo.php} />
                                 </dd>
                             </div>
                             <div className="flex flex-col gap-1">
@@ -217,6 +263,14 @@ export default function SiteShow({
                                     {site.last_scan_at ? timeAgo(site.last_scan_at) : 'Never'}
                                 </dd>
                             </div>
+                            {site.whois?.expires_at && (
+                                <div className="flex flex-col gap-1">
+                                    <dt className="text-xs text-muted-foreground">Domain expires</dt>
+                                    <dd className="font-medium" title={site.whois.registrar ?? undefined}>
+                                        {new Date(site.whois.expires_at).toLocaleDateString()}
+                                    </dd>
+                                </div>
+                            )}
                         </dl>
                     </CardContent>
                 </Card>
