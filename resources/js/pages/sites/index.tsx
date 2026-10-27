@@ -7,7 +7,6 @@ import { PhpVersionBadge } from '@/components/version-badges';
 import { Download } from 'lucide-react';
 import { dashboard } from '@/routes';
 import {
-    edit as siteEdit,
     index as sitesIndex,
     ping as sitePing,
     scan as siteScan,
@@ -217,7 +216,7 @@ export default function SitesIndex({ sites, clients, versionInfo, agentPluginVer
                                                         asChild
                                                         title="Edit"
                                                     >
-                                                        <a href={siteEdit(site).url}>
+                                                        <a href={siteShow(site).url}>
                                                             <Pencil />
                                                         </a>
                                                     </Button>

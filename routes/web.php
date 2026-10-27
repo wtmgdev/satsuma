@@ -30,7 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['show', 'create'])
         ->parameters(['clients' => 'client']);
 
-    Route::resource('sites', SiteController::class)->except(['create']);
+    Route::resource('sites', SiteController::class)->except(['create', 'edit']);
     Route::post('sites/{site}/scan', [SiteController::class, 'scan'])->name('sites.scan');
     Route::post('sites/{site}/ping', [SiteController::class, 'ping'])->name('sites.ping');
 

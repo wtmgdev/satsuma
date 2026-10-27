@@ -10,17 +10,18 @@ import {
     EyeOff,
     Pencil,
     PlugZap,
+    Puzzle,
     RefreshCw,
     Trash2,
 } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
+import InputError from '@/components/input-error';
 import { PhpVersionBadge, WpVersionBadge } from '@/components/version-badges';
 import { usePollWhile } from '@/hooks/use-poll-while';
 import {
     index as sitesIndex,
     ping as sitePing,
     scan as siteScan,
-    edit as siteEdit,
 } from '@/routes/sites';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -41,7 +42,21 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Empty,
     EmptyDescription,
@@ -57,19 +72,21 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import type { Site, SitePlugin } from '@/types';
+import type { Client, Site, SitePlugin } from '@/types';
 import type { PhpInfo, WpInfo } from '@/components/version-badges';
 
 type VulnerabilitySummary = Record<string, { severity: string; count: number }>;
 
 export default function SiteShow({
     site,
+    clients,
     agentToken,
     versionInfo,
     agentPluginVersion,
     vulnerabilities,
 }: {
     site: Site;
+    clients: Client[];
     agentToken: string;
     versionInfo: {
         php: PhpInfo;
@@ -139,12 +156,12 @@ export default function SiteShow({
                                 )}
                                 {working ? 'Scanning…' : 'Run Scan'}
                             </Button>
-                            <Button size="sm" variant="outline" asChild>
-                                <a href={siteEdit(site).url}>
-                                    <Pencil data-icon="inline-start" />
-                                    Edit
-                                </a>
-                            </Button>
+                            <AgentSetupDialog
+                                siteUrl={site.url}
+                                token={agentToken}
+                                pluginVersion={agentPluginVersion}
+                            />
+                            <EditSiteDialog site={site} clients={clients} />
                             <DeleteSiteButton site={site} />
                         </div>
                     </CardHeader>
@@ -203,8 +220,6 @@ export default function SiteShow({
                         </dl>
                     </CardContent>
                 </Card>
-
-                <AgentSetupCard siteUrl={site.url} token={agentToken} pluginVersion={agentPluginVersion} />
 
                 <Card>
                     <CardHeader>
@@ -315,7 +330,7 @@ function ComponentTable({
     );
 }
 
-function AgentSetupCard({
+function AgentSetupDialog({
     siteUrl,
     token,
     pluginVersion,
@@ -334,15 +349,19 @@ function AgentSetupCard({
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Agent Setup</CardTitle>
-                <CardDescription>
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                    <Puzzle data-icon="inline-start" />
+                    Agent setup
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+                <DialogTitle>Agent Setup</DialogTitle>
+                <DialogDescription>
                     Connect the Satsuma agent plugin on {siteUrl} so scans can
                     reach this site.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
+                </DialogDescription>
                 <ol className="flex flex-col gap-2 text-sm text-muted-foreground">
                     <li className="flex gap-2">
                         <span className="font-medium text-foreground">1.</span>
@@ -402,8 +421,101 @@ function AgentSetupCard({
                         </Button>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function EditSiteDialog({ site, clients }: { site: Site; clients: Client[] }) {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                    <Pencil data-icon="inline-start" />
+                    Edit
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+                <DialogTitle>Edit {site.name}</DialogTitle>
+                <DialogDescription>
+                    Update site connection details.
+                </DialogDescription>
+                <Form {...SiteController.update.form(site)}>
+                    {({ processing, errors }) => (
+                        <FieldGroup>
+                            <Field>
+                                <FieldLabel htmlFor="name">Site name</FieldLabel>
+                                <Input
+                                    id="name"
+                                    name="name"
+                                    required
+                                    defaultValue={site.name}
+                                />
+                                <InputError message={errors.name} />
+                            </Field>
+
+                            <Field>
+                                <FieldLabel htmlFor="url">Site URL</FieldLabel>
+                                <Input
+                                    id="url"
+                                    name="url"
+                                    type="url"
+                                    required
+                                    defaultValue={site.url}
+                                />
+                                <InputError message={errors.url} />
+                            </Field>
+
+                            <Field>
+                                <FieldLabel htmlFor="client_id">Client</FieldLabel>
+                                <Select
+                                    name="client_id"
+                                    defaultValue={site.client_id ? String(site.client_id) : undefined}
+                                >
+                                    <SelectTrigger id="client_id" className="w-full">
+                                        <SelectValue placeholder="No client" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {clients.map((client) => (
+                                                <SelectItem key={client.id} value={String(client.id)}>
+                                                    {client.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.client_id} />
+                            </Field>
+
+                            <Field>
+                                <FieldLabel htmlFor="api_token">API token</FieldLabel>
+                                <Input
+                                    id="api_token"
+                                    name="api_token"
+                                    placeholder="Unchanged"
+                                />
+                                <FieldDescription>
+                                    Leave blank to keep the current token.
+                                </FieldDescription>
+                                <InputError message={errors.api_token} />
+                            </Field>
+
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="button" variant="outline">
+                                        Cancel
+                                    </Button>
+                                </DialogClose>
+                                <Button type="submit" disabled={processing}>
+                                    Save Changes
+                                </Button>
+                            </DialogFooter>
+                        </FieldGroup>
+                    )}
+                </Form>
+            </DialogContent>
+        </Dialog>
     );
 }
 

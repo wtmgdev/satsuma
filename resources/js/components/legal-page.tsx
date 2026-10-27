@@ -20,14 +20,14 @@ export function LegalPage({
                     className="pointer-events-none absolute inset-0"
                     style={{
                         background:
-                            'radial-gradient(ellipse 60rem 30rem at 50% -14rem, color-mix(in oklab, var(--primary) 14%, transparent), transparent)',
+                            'radial-gradient(ellipse 60rem 30rem at 50% -14rem, color-mix(in oklab, oklch(0.72 0.15 55) 18%, transparent), transparent)',
                     }}
                 />
 
                 <div className="relative mx-auto flex w-full max-w-3xl flex-col px-6 py-8">
                     <header className="flex items-center justify-between">
                         <Link href={home()} className="flex items-center gap-2.5">
-                            <AppLogoIcon className="size-6 text-primary" />
+                            <AppLogoIcon className="size-6 text-orange-400" />
                             <span className="text-sm font-semibold tracking-tight">
                                 Satsuma
                             </span>

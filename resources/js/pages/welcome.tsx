@@ -47,14 +47,14 @@ export default function Welcome() {
                     className="pointer-events-none absolute inset-0"
                     style={{
                         background:
-                            'radial-gradient(ellipse 60rem 30rem at 50% -14rem, color-mix(in oklab, var(--primary) 14%, transparent), transparent)',
+                            'radial-gradient(ellipse 60rem 30rem at 50% -14rem, color-mix(in oklab, oklch(0.72 0.15 55) 18%, transparent), transparent)',
                     }}
                 />
 
                 <div className="relative flex min-h-screen flex-col">
                     <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
                         <div className="flex items-center gap-2.5">
-                            <AppLogoIcon className="size-7 text-primary" />
+                            <AppLogoIcon className="size-7 text-orange-400" />
                             <span className="text-sm font-semibold tracking-tight">
                                 Satsuma
                             </span>

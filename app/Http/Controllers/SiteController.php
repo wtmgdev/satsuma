@@ -102,6 +102,7 @@ class SiteController extends Controller
 
         return Inertia::render('sites/show', [
             'site' => $site,
+            'clients' => $site->organization->clients()->orderBy('name')->get(['id', 'name']),
             'agentToken' => $site->api_token,
             'versionInfo' => app(VersionFeedService::class)->check($site),
             'agentPluginVersion' => AgentPluginController::version(),
@@ -122,15 +123,6 @@ class SiteController extends Controller
         ])->all();
     }
 
-    public function edit(Request $request, Site $site): Response
-    {
-        $this->authorize('update', $site);
-
-        return Inertia::render('sites/edit', [
-            'site' => $site->only(['id', 'client_id', 'name', 'url']),
-            'clients' => $site->organization->clients()->orderBy('name')->get(['id', 'name']),
-        ]);
-    }
 
     public function update(UpdateSiteRequest $request, Site $site): RedirectResponse
     {

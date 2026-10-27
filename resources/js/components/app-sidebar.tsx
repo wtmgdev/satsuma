@@ -9,6 +9,7 @@ import {
     UserRound,
     UserRoundCog,
 } from 'lucide-react';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { NavMain } from '@/components/nav-main';
 import { NotificationBell } from '@/components/notification-bell';
 import { NavUser } from '@/components/nav-user';
@@ -85,6 +86,18 @@ export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="lg" asChild>
+                            <Link href={dashboard()} prefetch>
+                                <AppLogoIcon className="size-5 text-orange-400" />
+                                <span className="text-base font-semibold">
+                                    Satsuma
+                                </span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
                 {inSettings ? (
                     <SidebarMenu>
                         <SidebarMenuItem>
