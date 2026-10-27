@@ -6,7 +6,7 @@ export default function Cookies() {
             <section>
                 <h2>What we use</h2>
                 <p>
-                    Shoal only uses cookies that are strictly necessary to
+                    Satsuma only uses cookies that are strictly necessary to
                     run the application. We do not use advertising or
                     analytics trackers.
                 </p>
@@ -50,7 +50,7 @@ export default function Cookies() {
                 <h2>Contact</h2>
                 <p>
                     Questions about this policy can be sent to
-                    privacy@shoal.app.
+                    privacy@satsuma.app.
                 </p>
             </section>
         </LegalPage>

@@ -26,9 +26,9 @@ class SiteOffline extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject("{$this->site->name} is offline")
             ->greeting("{$this->site->name} is offline")
-            ->line("Shoal could not reach {$this->site->url} during its last connection check.")
+            ->line("Satsuma could not reach {$this->site->url} during its last connection check.")
             ->line('Possible causes: the site is down, the agent plugin is inactive, or the stored token no longer matches.')
-            ->action('Open the site in Shoal', url("/sites/{$this->site->id}"));
+            ->action('Open the site in Satsuma', url("/sites/{$this->site->id}"));
     }
 
     public function toDatabase(object $notifiable): array

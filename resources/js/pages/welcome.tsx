@@ -41,7 +41,7 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="Shoal — WordPress management" />
+            <Head title="Satsuma — WordPress management" />
             <div className="dark relative min-h-screen bg-background text-foreground">
                 <div
                     className="pointer-events-none absolute inset-0"
@@ -56,7 +56,7 @@ export default function Welcome() {
                         <div className="flex items-center gap-2.5">
                             <AppLogoIcon className="size-7 text-primary" />
                             <span className="text-sm font-semibold tracking-tight">
-                                Shoal
+                                Satsuma
                             </span>
                         </div>
                         <nav className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export default function Welcome() {
                                 </span>
                             </h1>
                             <p className="max-w-xl text-balance text-base text-muted-foreground md:text-lg">
-                                Shoal keeps track of versions, plugins and
+                                Satsuma keeps track of versions, plugins and
                                 updates across every site you manage — so
                                 nothing drifts out of date unnoticed.
                             </p>
@@ -132,7 +132,7 @@ export default function Welcome() {
                     </main>
 
                     <footer className="mx-auto flex w-full max-w-6xl items-center justify-between border-t border-border px-6 py-6 text-xs text-muted-foreground">
-                        <span>Shoal</span>
+                        <span>Satsuma</span>
                         <nav className="flex items-center gap-4">
                             <Link
                                 href="/privacy"

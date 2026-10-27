@@ -203,7 +203,7 @@ function AddMemberForm() {
                             </Button>
                         </div>
                         <FieldDescription>
-                            The user must already have a Shoal account.
+                            The user must already have a Satsuma account.
                         </FieldDescription>
                         <InputError message={errors.email} />
                     </Field>

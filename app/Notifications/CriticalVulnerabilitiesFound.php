@@ -46,7 +46,7 @@ class CriticalVulnerabilitiesFound extends Notification implements ShouldQueue
 
         return $mail
             ->line('Update the affected components or plan a patch window.')
-            ->action('Open the site in Shoal', url("/sites/{$this->site->id}"));
+            ->action('Open the site in Satsuma', url("/sites/{$this->site->id}"));
     }
 
     public function toDatabase(object $notifiable): array

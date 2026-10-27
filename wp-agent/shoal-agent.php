@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: Shoal Agent
- * Description: Companion REST agent for the Shoal WordPress management platform. Exposes read-only system info secured by a bearer token.
+ * Plugin Name: Satsuma Agent
+ * Description: Connects this site to Satsuma for inventory scans, update tracking and monitoring.
  * Version: 0.7.0
  * Requires PHP: 7.4
- * Author: Shoal
+ * Author: Satsuma
  * Text Domain: shoal-agent
  */
 
@@ -170,8 +170,8 @@ add_action(
     'admin_menu',
     function () {
         add_options_page(
-            __('Shoal Agent', 'shoal-agent'),
-            __('Shoal Agent', 'shoal-agent'),
+            __('Satsuma Agent', 'shoal-agent'),
+            __('Satsuma Agent', 'shoal-agent'),
             'manage_options',
             'shoal-agent',
             'shoal_agent_render_settings_page'
@@ -211,14 +211,14 @@ function shoal_agent_render_settings_page(): void
         <div style="margin:20px 0 0;">
             <img src="<?php echo esc_url($assets.'banner-772x250.png'); ?>"
                  srcset="<?php echo esc_url($assets.'banner-1544x500.png'); ?> 2x"
-                 alt="<?php esc_attr_e('Shoal — WordPress fleet management', 'shoal-agent'); ?>"
+                 alt="<?php esc_attr_e('Satsuma — WordPress fleet management', 'shoal-agent'); ?>"
                  style="width:100%;height:auto;display:block;border-radius:8px;" />
         </div>
 
         <div style="margin-top:24px;">
             <div style="background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:24px;max-width:640px;">
-                <h2 style="margin-top:0;"><?php esc_html_e('Connect this site to Shoal', 'shoal-agent'); ?></h2>
-                <p><?php esc_html_e('Paste the API token generated for this site in your Shoal dashboard (site page → Agent Setup).', 'shoal-agent'); ?></p>
+                <h2 style="margin-top:0;"><?php esc_html_e('Connect this site to Satsuma', 'shoal-agent'); ?></h2>
+                <p><?php esc_html_e('Paste the API token generated for this site in your Satsuma dashboard (site page → Agent Setup).', 'shoal-agent'); ?></p>
 
                 <?php if ($connected) : ?>
                     <p>
@@ -262,7 +262,7 @@ function shoal_agent_render_settings_page(): void
                                             $masked
                                         ));
                                     } else {
-                                        esc_html_e('No token stored yet — scans from Shoal will be rejected until one is set.', 'shoal-agent');
+                                        esc_html_e('No token stored yet — scans from Satsuma will be rejected until one is set.', 'shoal-agent');
                                     }
                                     ?>
                                 </p>

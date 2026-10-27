@@ -1,4 +1,4 @@
-# Shoal — Roadmap
+# Satsuma — Roadmap
 
 Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + Filament (internal ops panel only).
 

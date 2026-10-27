@@ -338,7 +338,7 @@ function AgentSetupCard({
             <CardHeader>
                 <CardTitle>Agent Setup</CardTitle>
                 <CardDescription>
-                    Connect the Shoal agent plugin on {siteUrl} so scans can
+                    Connect the Satsuma agent plugin on {siteUrl} so scans can
                     reach this site.
                 </CardDescription>
             </CardHeader>
@@ -352,7 +352,7 @@ function AgentSetupCard({
                                 href="/agent-plugin/download"
                                 className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4"
                             >
-                                Shoal agent plugin (.zip){pluginVersion ? ` v${pluginVersion}` : ''}
+                                Satsuma agent plugin (.zip){pluginVersion ? ` v${pluginVersion}` : ''}
                                 <Download />
                             </a>{' '}
                             and install it on the WordPress site via
@@ -363,7 +363,7 @@ function AgentSetupCard({
                         <span className="font-medium text-foreground">2.</span>
                         <span>
                             Activate it, then paste the token below into{' '}
-                            <code>Settings → Shoal Agent</code> in the site's
+                            <code>Settings → Satsuma Agent</code> in the site's
                             wp-admin.
                         </span>
                     </li>

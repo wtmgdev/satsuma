@@ -6,7 +6,7 @@ export default function Privacy() {
             <section>
                 <h2>Overview</h2>
                 <p>
-                    Shoal is a service for managing WordPress sites. This
+                    Satsuma is a service for managing WordPress sites. This
                     policy describes what information we collect when you use
                     the service, why we collect it, and how it is handled.
                 </p>
@@ -21,7 +21,7 @@ export default function Privacy() {
                 </p>
                 <p>
                     <strong>Site data.</strong> For each site you connect, the
-                    Shoal agent reports technical inventory: the site URL,
+                    Satsuma agent reports technical inventory: the site URL,
                     WordPress and PHP versions, and the installed plugins and
                     themes with their versions. Scans only run when you
                     request them or on a schedule you configure.
@@ -67,7 +67,7 @@ export default function Privacy() {
                 <h2>Contact</h2>
                 <p>
                     Questions about this policy can be sent to
-                    privacy@shoal.app.
+                    privacy@satsuma.app.
                 </p>
             </section>
         </LegalPage>

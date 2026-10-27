@@ -14,7 +14,7 @@ export function LegalPage({
 }) {
     return (
         <>
-            <Head title={`${title} — Shoal`} />
+            <Head title={`${title} — Satsuma`} />
             <div className="dark relative min-h-screen bg-background text-foreground">
                 <div
                     className="pointer-events-none absolute inset-0"
@@ -29,7 +29,7 @@ export function LegalPage({
                         <Link href={home()} className="flex items-center gap-2.5">
                             <AppLogoIcon className="size-6 text-primary" />
                             <span className="text-sm font-semibold tracking-tight">
-                                Shoal
+                                Satsuma
                             </span>
                         </Link>
                         <Link

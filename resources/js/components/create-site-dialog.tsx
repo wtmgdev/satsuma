@@ -44,7 +44,7 @@ export function CreateSiteDialog({ clients, open, onOpenChange, trigger }: Props
                 <DialogHeader>
                     <DialogTitle>Add Site</DialogTitle>
                     <DialogDescription>
-                        Connect a WordPress site with the Shoal agent plugin.
+                        Connect a WordPress site with the Satsuma agent plugin.
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...SiteController.store.form()} className="flex flex-col gap-6">
@@ -107,7 +107,7 @@ export function CreateSiteDialog({ clients, open, onOpenChange, trigger }: Props
                                         placeholder="Leave blank to auto-generate"
                                     />
                                     <FieldDescription>
-                                        Set this token in the Shoal agent plugin on the
+                                        Set this token in the Satsuma agent plugin on the
                                         WordPress site.
                                     </FieldDescription>
                                     <InputError message={errors.api_token} />
