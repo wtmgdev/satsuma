@@ -1,12 +1,12 @@
 import { router, usePage } from '@inertiajs/react';
 import { Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { SidebarMenuButton } from '@/components/ui/sidebar';
 
 type NotificationItem = {
     id: string;
@@ -55,16 +55,17 @@ export function NotificationBell() {
     return (
         <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="ghost" className="relative" title="Notifications">
+                <SidebarMenuButton tooltip={{ children: 'Notifications' }}>
                     <Bell />
+                    <span>Notifications</span>
                     {unread > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-white">
+                        <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-white">
                             {unread > 9 ? '9+' : unread}
                         </span>
                     )}
-                </Button>
+                </SidebarMenuButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-80">
                 <div className="flex items-center justify-between px-3 py-2">
                     <span className="text-sm font-medium">Notifications</span>
                     {unread > 0 && (

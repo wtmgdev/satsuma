@@ -10,12 +10,14 @@ import {
     UserRoundCog,
 } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
+import { NotificationBell } from '@/components/notification-bell';
 import { NavUser } from '@/components/nav-user';
 import { OrgSwitcher } from '@/components/org-switcher';
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
+    SidebarGroup,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -108,6 +110,15 @@ export function AppSidebar() {
                     items={inSettings ? settingsNavItems : mainNavItems}
                     label={inSettings ? 'Settings' : 'Platform'}
                 />
+                {!inSettings && (
+                    <SidebarGroup className="px-2 py-0">
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <NotificationBell />
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
             </SidebarContent>
 
             <SidebarFooter>
