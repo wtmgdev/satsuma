@@ -2,14 +2,24 @@
 
 use App\Jobs\SyncSiteStatusJob;
 use App\Models\Client;
+use App\Models\Organization;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Queue;
 
+function userWithOrg(string $role = 'owner'): array
+{
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $organization->members()->attach($user->id, ['role' => $role]);
+
+    return [$user, $organization];
+}
+
 it('creates a site with a generated token and queues the first scan', function () {
     Queue::fake();
-    $user = User::factory()->create();
-    $client = Client::factory()->create();
+    [$user, $organization] = userWithOrg();
+    $client = Client::factory()->for($organization)->create();
 
     $response = $this->actingAs($user)->post('/sites', [
         'client_id' => $client->id,
@@ -20,6 +30,7 @@ it('creates a site with a generated token and queues the first scan', function (
     $site = Site::where('url', 'https://acme.test')->first();
 
     expect($site)->not->toBeNull()
+        ->and($site->organization_id)->toBe($organization->id)
         ->and($site->client_id)->toBe($client->id)
         ->and($site->api_token)->not->toBeEmpty()
         ->and($response->headers->get('Location'))->toContain("/sites/{$site->id}");
@@ -28,8 +39,8 @@ it('creates a site with a generated token and queues the first scan', function (
 });
 
 it('validates duplicate site urls', function () {
-    $user = User::factory()->create();
-    Site::factory()->create(['url' => 'https://acme.test']);
+    [$user, $organization] = userWithOrg();
+    Site::factory()->for($organization)->create(['url' => 'https://acme.test']);
 
     $this->actingAs($user)
         ->post('/sites', ['name' => 'Other', 'url' => 'https://acme.test'])
@@ -37,8 +48,8 @@ it('validates duplicate site urls', function () {
 });
 
 it('updates a site without regenerating the token when blank', function () {
-    $user = User::factory()->create();
-    $site = Site::factory()->create();
+    [$user, $organization] = userWithOrg();
+    $site = Site::factory()->for($organization)->create();
 
     $this->actingAs($user)
         ->put("/sites/{$site->id}", [
@@ -55,8 +66,8 @@ it('updates a site without regenerating the token when blank', function () {
 });
 
 it('deletes a site', function () {
-    $user = User::factory()->create();
-    $site = Site::factory()->create();
+    [$user, $organization] = userWithOrg();
+    $site = Site::factory()->for($organization)->create();
 
     $this->actingAs($user)
         ->delete("/sites/{$site->id}")
@@ -65,8 +76,29 @@ it('deletes a site', function () {
     expect(Site::find($site->id))->toBeNull();
 });
 
+it('forbids members from deleting sites', function () {
+    [$user, $organization] = userWithOrg('member');
+    $site = Site::factory()->for($organization)->create();
+
+    $this->actingAs($user)
+        ->delete("/sites/{$site->id}")
+        ->assertForbidden();
+
+    expect(Site::find($site->id))->not->toBeNull();
+});
+
+it('hides other organizations sites from the index', function () {
+    [$user, $organization] = userWithOrg();
+    Site::factory()->for($organization)->create(['name' => 'Mine']);
+    Site::factory()->create(['name' => 'Theirs']);
+
+    $response = $this->actingAs($user)->get('/sites');
+
+    expect(collect($response->inertiaProps()['sites'])->pluck('name')->all())->toBe(['Mine']);
+});
+
 it('creates and updates a client', function () {
-    $user = User::factory()->create();
+    [$user] = userWithOrg();
 
     $this->actingAs($user)
         ->post('/clients', ['name' => 'Acme Inc', 'email' => 'billing@acme.test'])
@@ -83,18 +115,19 @@ it('creates and updates a client', function () {
 });
 
 it('deleting a client nullifies its sites instead of deleting them', function () {
-    $user = User::factory()->create();
-    $site = Site::factory()->create();
+    [$user, $organization] = userWithOrg();
+    $client = Client::factory()->for($organization)->create();
+    $site = Site::factory()->for($organization)->for($client)->create();
 
     $this->actingAs($user)
-        ->delete("/clients/{$site->client_id}")
+        ->delete("/clients/{$client->id}")
         ->assertRedirect('/clients');
 
     expect($site->refresh()->client_id)->toBeNull();
 });
 
 it('serves the agent plugin for download', function () {
-    $user = User::factory()->create();
+    [$user] = userWithOrg();
 
     $this->actingAs($user)
         ->get('/agent-plugin/download')

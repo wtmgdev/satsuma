@@ -14,6 +14,7 @@ class Site extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'client_id',
         'name',
         'url',
@@ -40,6 +41,11 @@ class Site extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function plugins(): HasMany

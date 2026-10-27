@@ -20,6 +20,11 @@ class UsersTable
                 TextColumn::make('email')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('organizations_count')
+                    ->counts('organizations')
+                    ->label('Organizations')
+                    ->badge()
+                    ->color('info'),
                 TextColumn::make('email_verified_at')
                     ->label('Verified')
                     ->since()

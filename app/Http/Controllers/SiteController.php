@@ -6,6 +6,7 @@ use App\Http\Requests\StoreSiteRequest;
 use App\Http\Requests\UpdateSiteRequest;
 use App\Jobs\SyncSiteStatusJob;
 use App\Models\Client;
+use App\Models\Organization;
 use App\Models\Site;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,26 +18,39 @@ class SiteController extends Controller
 {
     public function index(Request $request): Response
     {
-        $sites = Site::query()
-            ->with('client:id,name')
-            ->orderBy('name')
-            ->get([
-                'id',
-                'client_id',
-                'name',
-                'url',
-                'connection_status',
-                'wp_version',
-                'php_version',
-                'last_ping_at',
-            ]);
+        $organization = $request->attributes->get('currentOrganization');
 
-        return Inertia::render('sites/index', ['sites' => $sites, 'clients' => Client::query()->orderBy('name')->get(['id', 'name'])]);
+        $sites = $organization
+            ? $organization->sites()
+                ->with('client:id,name')
+                ->orderBy('name')
+                ->get([
+                    'id',
+                    'organization_id',
+                    'client_id',
+                    'name',
+                    'url',
+                    'connection_status',
+                    'wp_version',
+                    'php_version',
+                    'last_ping_at',
+                ])
+            : collect();
+
+        $clients = $organization
+            ? $organization->clients()->orderBy('name')->get(['id', 'name'])
+            : collect();
+
+        return Inertia::render('sites/index', ['sites' => $sites, 'clients' => $clients]);
     }
 
     public function store(StoreSiteRequest $request): RedirectResponse
     {
-        $site = Site::create([
+        $organization = $request->attributes->get('currentOrganization');
+
+        abort_unless($organization instanceof Organization, 403, 'Create an organization first.');
+
+        $site = $organization->sites()->create([
             ...$request->validated(),
             'api_token' => $request->validated('api_token') ?: Str::random(64),
         ]);
@@ -49,6 +63,8 @@ class SiteController extends Controller
 
     public function show(Request $request, Site $site): Response
     {
+        $this->authorize('view', $site);
+
         $site->load([
             'client:id,name,email,phone',
             'plugins:id,site_id,name,slug,version,is_active,update_available,new_version',
@@ -63,14 +79,18 @@ class SiteController extends Controller
 
     public function edit(Request $request, Site $site): Response
     {
+        $this->authorize('update', $site);
+
         return Inertia::render('sites/edit', [
             'site' => $site->only(['id', 'client_id', 'name', 'url']),
-            'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
+            'clients' => $site->organization->clients()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function update(UpdateSiteRequest $request, Site $site): RedirectResponse
     {
+        $this->authorize('update', $site);
+
         $data = $request->validated();
 
         if (blank($data['api_token'] ?? null)) {
@@ -85,6 +105,8 @@ class SiteController extends Controller
 
     public function destroy(Request $request, Site $site): RedirectResponse
     {
+        $this->authorize('delete', $site);
+
         $site->delete();
 
         return redirect()->route('sites.index')
@@ -93,6 +115,8 @@ class SiteController extends Controller
 
     public function scan(Request $request, Site $site): RedirectResponse
     {
+        $this->authorize('scan', $site);
+
         SyncSiteStatusJob::dispatch($site);
 
         return back()->with('success', "Scan for {$site->name} queued.");

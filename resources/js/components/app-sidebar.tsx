@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Building2,
     Globe,
     LayoutGrid,
     Palette,
@@ -8,9 +9,9 @@ import {
     UserRound,
     UserRoundCog,
 } from 'lucide-react';
-import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { OrgSwitcher } from '@/components/org-switcher';
 import {
     Sidebar,
     SidebarContent,
@@ -59,6 +60,11 @@ const settingsNavItems: NavItem[] = [
         icon: ShieldCheck,
     },
     {
+        title: 'Organization',
+        href: '/settings/organization',
+        icon: Building2,
+    },
+    {
         title: 'Appearance',
         href: editAppearance(),
         icon: Palette,
@@ -72,9 +78,9 @@ export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        {inSettings ? (
+                {inSettings ? (
+                    <SidebarMenu>
+                        <SidebarMenuItem>
                             <SidebarMenuButton
                                 size="lg"
                                 asChild
@@ -82,20 +88,14 @@ export function AppSidebar() {
                             >
                                 <Link href={dashboard()} prefetch>
                                     <ArrowLeft />
-                                    <span className="text-sm font-medium">
-                                        Settings
-                                    </span>
+                                    <span className="text-sm font-medium">Settings</span>
                                 </Link>
                             </SidebarMenuButton>
-                        ) : (
-                            <SidebarMenuButton size="lg" asChild>
-                                <Link href={dashboard()} prefetch>
-                                    <AppLogo />
-                                </Link>
-                            </SidebarMenuButton>
-                        )}
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                ) : (
+                    <OrgSwitcher />
+                )}
             </SidebarHeader>
 
             <SidebarContent>

@@ -10,6 +10,19 @@ export type User = {
     [key: string]: unknown;
 };
 
+export type Organization = {
+    id: number;
+    name: string;
+    slug: string;
+};
+
+export type OrgMember = {
+    id: number;
+    name: string;
+    email: string;
+    role: 'owner' | 'admin' | 'member';
+};
+
 export type Auth = {
     user: User;
 };

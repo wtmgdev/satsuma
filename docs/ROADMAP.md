@@ -31,11 +31,15 @@ No billing, no multi-tenancy, no vulnerability feeds yet.
 ## Revised incremental roadmap
 
 ### Phase 2 — Organizations (multi-tenancy) + billing
-- Organization model; users belong to organizations via invitations with roles.
-  Internal Filament panel gains cross-organization user/subscription views.
-- Stripe billing. Different strategy than ManageWP: flat per-organization subscription
-  tiers instead of per-site per-addon metering. Cashier + webhooks.
-- Site/client scoping via policies; global scope on the tenant.
+- [x] Organization model with membership roles (owner/admin/member); users get a
+  personal workspace on registration.
+- [x] Clients and sites scoped to the current organization (session-based switcher
+  in the sidebar); policies enforce role ranks.
+- [x] Organization settings page (rename + member management) in the sidebar
+  settings mode; internal Filament panel shows org counts per user.
+- [ ] Stripe billing. Flat per-organization subscription tiers instead of
+  per-site per-addon metering. Cashier + webhooks.
+- [ ] Email invitations for members (currently: add existing users by email).
 
 ### Phase 3 — Vulnerability intelligence + scheduled scans
 - Patchstack (or WPScan) API integration; map installed plugin/theme slugs+versions
