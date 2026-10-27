@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Shoal Agent
  * Description: Companion REST agent for the Shoal WordPress management platform. Exposes read-only system info secured by a bearer token.
- * Version: 0.4.0
+ * Version: 0.5.0
  * Requires PHP: 7.4
  * Author: Shoal
  * Text Domain: shoal-agent
@@ -41,6 +41,19 @@ function shoal_agent_authorize(WP_REST_Request $request): bool
         && hash_equals($expected, $provided);
 }
 
+/**
+ * Normalize a value that may be an object (stdClass from transients or
+ * premium updaters) into an array.
+ */
+function shoal_agent_to_array(mixed $value): array
+{
+    if (is_object($value)) {
+        return (array) $value;
+    }
+
+    return is_array($value) ? $value : [];
+}
+
 add_action(
     'rest_api_init',
     function () {
@@ -71,11 +84,16 @@ add_action(
                 wp_update_plugins();
                 wp_update_themes();
 
-                $updatePlugins = get_site_transient('update_plugins');
-                $updateThemes = get_site_transient('update_themes');
+                $updatePlugins = shoal_agent_to_array(get_site_transient('update_plugins'));
+                $updateThemes = shoal_agent_to_array(get_site_transient('update_themes'));
+
+                $pluginResponses = shoal_agent_to_array($updatePlugins['response'] ?? []);
+                $themeResponses = shoal_agent_to_array($updateThemes['response'] ?? []);
 
                 $coreUpdate = null;
-                foreach (get_core_updates(['dismissed' => false]) as $coreOffer) {
+                foreach (shoal_agent_to_array(get_core_updates(['dismissed' => false])) as $coreOffer) {
+                    $coreOffer = shoal_agent_to_array($coreOffer);
+
                     if (($coreOffer['response'] ?? '') === 'upgrade') {
                         $coreUpdate = $coreOffer;
                         break;
@@ -84,30 +102,34 @@ add_action(
 
                 $plugins = [];
                 foreach (get_plugins() as $file => $data) {
-                    $pluginUpdate = is_object($updatePlugins) ? ($updatePlugins->response[$file] ?? null) : null;
+                    $pluginUpdate = shoal_agent_to_array($pluginResponses[$file] ?? null);
+                    $newVersion = $pluginUpdate['new_version'] ?? null;
+
                     $plugins[] = [
                         'name' => $data['Name'],
                         'slug' => dirname($file) === '.' ? sanitize_key($data['Name']) : dirname($file),
                         'version' => $data['Version'],
                         'is_active' => is_plugin_active($file),
-                        'update_available' => is_array($pluginUpdate) && isset($pluginUpdate['new_version'])
-                            && version_compare($data['Version'], (string) $pluginUpdate['new_version'], '<'),
-                        'new_version' => is_array($pluginUpdate) ? ($pluginUpdate['new_version'] ?? null) : null,
+                        'update_available' => $newVersion !== null
+                            && version_compare((string) $data['Version'], (string) $newVersion, '<'),
+                        'new_version' => $newVersion,
                     ];
                 }
 
                 $themes = [];
                 foreach (wp_get_themes() as $theme) {
                     $stylesheet = $theme->get_stylesheet();
-                    $themeUpdate = is_object($updateThemes) ? ($updateThemes->response[$stylesheet] ?? null) : null;
+                    $themeUpdate = shoal_agent_to_array($themeResponses[$stylesheet] ?? null);
+                    $newVersion = $themeUpdate['new_version'] ?? null;
+
                     $themes[] = [
                         'name' => $theme->get('Name'),
                         'slug' => $stylesheet,
                         'version' => $theme->get('Version'),
                         'is_active' => $stylesheet === get_stylesheet(),
-                        'update_available' => is_array($themeUpdate) && isset($themeUpdate['new_version'])
-                            && version_compare($theme->get('Version'), (string) $themeUpdate['new_version'], '<'),
-                        'new_version' => is_array($themeUpdate) ? ($themeUpdate['new_version'] ?? null) : null,
+                        'update_available' => $newVersion !== null
+                            && version_compare((string) $theme->get('Version'), (string) $newVersion, '<'),
+                        'new_version' => $newVersion,
                     ];
                 }
 
