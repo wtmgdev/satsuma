@@ -1,10 +1,12 @@
 <?php
 
+use App\ConnectionStatus;
 use App\Jobs\SyncSiteStatusJob;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Site;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use ZipArchive;
 
@@ -70,6 +72,48 @@ it('still responds when a scan is requested while the queue is down', function (
         ->assertRedirect();
 
     Illuminate\Support\Facades\Exceptions::assertReported(RuntimeException::class);
+});
+
+it('pings a site synchronously and confirms the connection', function () {
+    [$user, $organization] = userWithOrg();
+    $site = Site::factory()->for($organization)->create(['url' => 'https://example.test']);
+
+    Http::fake([
+        'example.test/wp-json/agent/v1/ping' => Http::response([
+            'ok' => true,
+            'wp_version' => '6.9.4',
+            'php_version' => '8.1.34',
+        ]),
+    ]);
+
+    $this->actingAs($user)
+        ->post("/sites/{$site->id}/ping")
+        ->assertRedirect()
+        ->assertSessionHas('inertia.flash_data', fn ($flash) => ($flash['toast']['type'] ?? null) === 'success'
+            && str_contains($flash['toast']['message'] ?? '', 'Connected'));
+
+    $site->refresh();
+
+    expect($site->connection_status)->toBe(ConnectionStatus::Online)
+        ->and($site->wp_version)->toBe('6.9.4')
+        ->and($site->last_ping_at)->not->toBeNull();
+});
+
+it('reports a plain-language hint when the ping fails', function () {
+    [$user, $organization] = userWithOrg();
+    $site = Site::factory()->for($organization)->create(['url' => 'https://example.test']);
+
+    Http::fake([
+        'example.test/wp-json/agent/v1/ping' => Http::response(null, 404),
+    ]);
+
+    $this->actingAs($user)
+        ->post("/sites/{$site->id}/ping")
+        ->assertRedirect()
+        ->assertSessionHas('inertia.flash_data', fn ($flash) => ($flash['toast']['type'] ?? null) === 'error'
+            && str_contains($flash['toast']['message'] ?? '', 'outdated'));
+
+    expect($site->refresh()->connection_status)->toBe(ConnectionStatus::Offline);
 });
 
 it('validates duplicate site urls', function () {

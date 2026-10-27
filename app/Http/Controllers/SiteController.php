@@ -12,6 +12,8 @@ use App\Models\Organization;
 use App\Models\Site;
 use App\ScanStatus;
 use App\Services\VersionFeedService;
+use App\Services\WordPressClientService;
+use App\ConnectionStatus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -155,15 +157,26 @@ class SiteController extends Controller
         );
     }
 
-    public function ping(Request $request, Site $site, DispatchSiteJob $dispatchSiteJob): RedirectResponse
+    public function ping(Request $request, Site $site): RedirectResponse
     {
         $this->authorize('scan', $site);
 
-        $queued = $dispatchSiteJob->handle($site, new PingSiteJob($site));
+        $result = app(WordPressClientService::class)->pingSite($site);
 
-        return back()->flashToast(
-            $queued ? 'success' : 'warning',
-            $queued ? "Testing connection to {$site->name}…" : 'Queue unavailable — connection test not queued.',
-        );
+        if ($result['ok']) {
+            $site->update([
+                'wp_version' => $result['wp_version'] ?? $site->wp_version,
+                'php_version' => $result['php_version'] ?? $site->php_version,
+                'connection_status' => ConnectionStatus::Online,
+                'last_ping_at' => now(),
+            ]);
+
+            return back()->flashToast(
+                'success',
+                "Connected — WordPress {$result['wp_version']}, PHP {$result['php_version']}.",
+            );
+        }
+
+        return back()->flashToast('error', "Connection failed: {$result['hint']}");
     }
 }

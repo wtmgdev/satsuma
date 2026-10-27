@@ -38,10 +38,10 @@ class WordPressClientService
     }
 
     /**
-     * Lightweight authenticated connection check. Returns the ping payload
-     * (versions included) or null when the site is unreachable/unauthorized.
+     * Lightweight authenticated connection check. Returns a result array with
+     * the agent payload on success, or a plain-language failure hint.
      */
-    public function pingSite(Site $site): ?array
+    public function pingSite(Site $site): array
     {
         try {
             $response = Http::baseUrl(rtrim($site->url, '/'))
@@ -55,26 +55,36 @@ class WordPressClientService
 
             $payload = $response->throw()->json();
 
-            return is_array($payload) && ($payload['ok'] ?? false) === true ? $payload : null;
+            if (is_array($payload) && ($payload['ok'] ?? false) === true) {
+                return [
+                    'ok' => true,
+                    'wp_version' => is_string($payload['wp_version'] ?? null) ? $payload['wp_version'] : null,
+                    'php_version' => is_string($payload['php_version'] ?? null) ? $payload['php_version'] : null,
+                ];
+            }
+
+            return ['ok' => false, 'hint' => 'Agent responded unexpectedly.'];
         } catch (ConnectionException|RequestException $e) {
             $site->update(['connection_status' => ConnectionStatus::Offline]);
 
             $status = $e instanceof RequestException ? $e->response?->status() : null;
 
+            $hint = match (true) {
+                $status === 404 => 'Agent plugin is missing or outdated — update it to the latest version.',
+                in_array($status, [401, 403]) => 'Token mismatch — re-check the token stored in the agent settings.',
+                $status !== null => "Agent responded with HTTP {$status}.",
+                default => 'Site unreachable (connection error).',
+            };
+
             Log::warning('Site ping failed.', [
                 'site_id' => $site->id,
                 'url' => $site->url,
                 'http_status' => $status,
-                'hint' => match (true) {
-                    $status === 404 => 'Agent plugin is missing or outdated — no ping route.',
-                    in_array($status, [401, 403]) => 'Token mismatch — re-check the token stored in the agent settings.',
-                    $status !== null => 'Agent responded with an error.',
-                    default => 'Site unreachable (connection error).',
-                },
+                'hint' => $hint,
                 'error' => $e->getMessage(),
             ]);
 
-            return null;
+            return ['ok' => false, 'hint' => $hint];
         }
     }
 }

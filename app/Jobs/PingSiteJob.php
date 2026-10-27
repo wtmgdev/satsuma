@@ -21,15 +21,15 @@ class PingSiteJob implements ShouldQueue
 
     public function handle(WordPressClientService $client): void
     {
-        $payload = $client->pingSite($this->site);
+        $result = $client->pingSite($this->site);
 
-        if ($payload === null) {
+        if (! ($result['ok'] ?? false)) {
             return;
         }
 
         $this->site->update([
-            'wp_version' => $payload['wp_version'] ?? $this->site->wp_version,
-            'php_version' => $payload['php_version'] ?? $this->site->php_version,
+            'wp_version' => $result['wp_version'] ?? $this->site->wp_version,
+            'php_version' => $result['php_version'] ?? $this->site->php_version,
             'connection_status' => ConnectionStatus::Online,
             'last_ping_at' => now(),
         ]);
