@@ -43,9 +43,13 @@ export default function Welcome() {
         <>
             <Head title="Shoal — WordPress management" />
             <div className="dark relative min-h-screen bg-background text-foreground">
-                <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center overflow-hidden">
-                    <div className="mt-[-20rem] h-[36rem] w-[64rem] rounded-full bg-primary/10 blur-[120px]" />
-                </div>
+                <div
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                        background:
+                            'radial-gradient(ellipse 60rem 30rem at 50% -14rem, color-mix(in oklab, var(--primary) 14%, transparent), transparent)',
+                    }}
+                />
 
                 <div className="relative flex min-h-screen flex-col">
                     <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
@@ -128,10 +132,21 @@ export default function Welcome() {
                     </main>
 
                     <footer className="mx-auto flex w-full max-w-6xl items-center justify-between border-t border-border px-6 py-6 text-xs text-muted-foreground">
-                        <span>Shoal — self-hosted WordPress management</span>
-                        <Link href={login()} className="hover:text-foreground">
-                            Log in
-                        </Link>
+                        <span>Shoal</span>
+                        <nav className="flex items-center gap-4">
+                            <Link
+                                href="/privacy"
+                                className="hover:text-foreground"
+                            >
+                                Privacy policy
+                            </Link>
+                            <Link
+                                href="/cookies"
+                                className="hover:text-foreground"
+                            >
+                                Cookie policy
+                            </Link>
+                        </nav>
                     </footer>
                 </div>
             </div>

@@ -9,6 +9,8 @@ use App\Http\Controllers\SiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
+Route::inertia('/privacy', 'legal/privacy')->name('privacy');
+Route::inertia('/cookies', 'legal/cookies')->name('cookies');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
