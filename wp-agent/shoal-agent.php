@@ -208,14 +208,14 @@ function shoal_agent_render_settings_page(): void
     $connected = $token !== '';
     ?>
     <div class="wrap shoal-agent-wrap" style="max-width:1180px;">
-        <div style="margin:20px 0 0;">
-            <img src="<?php echo esc_url($assets.'banner-772x250.png'); ?>"
-                 srcset="<?php echo esc_url($assets.'banner-1544x500.png'); ?> 2x"
-                 alt="<?php esc_attr_e('Satsuma — WordPress fleet management', 'shoal-agent'); ?>"
-                 style="width:100%;height:auto;display:block;border-radius:8px;" />
-        </div>
+        <h1 style="display:flex;align-items:center;gap:10px;">
+            <img src="<?php echo esc_url($assets.'icon.svg'); ?>"
+                 alt=""
+                 style="width:28px;height:28px;display:block;border-radius:6px;" />
+            <?php esc_html_e('Satsuma Agent', 'shoal-agent'); ?>
+        </h1>
 
-        <div style="margin-top:24px;">
+        <div>
             <div style="background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:24px;max-width:640px;">
                 <h2 style="margin-top:0;"><?php esc_html_e('Connect this site to Satsuma', 'shoal-agent'); ?></h2>
                 <p><?php esc_html_e('Paste the API token generated for this site in your Satsuma dashboard (site page → Agent Setup).', 'shoal-agent'); ?></p>
