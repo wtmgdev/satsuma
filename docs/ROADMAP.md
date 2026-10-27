@@ -2,64 +2,68 @@
 
 Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + Filament (internal ops panel only).
 
-V1 scope is intentionally narrow: **client/website management + triggerable background site scans**.
-No billing, no multi-tenancy, no vulnerability feeds yet.
-
 ## Architecture
 
 - **Main app (Inertia/React)** — everything product-facing: dashboard, sites CRUD,
-  clients CRUD, scan triggers. This is where all feature work happens.
+  clients CRUD, scan triggers, organization management. All feature work happens here.
 - **Filament panel (`/admin`) — internal ops only.** Backend actions that span the
-  whole SaaS: all users across teams/organizations, and later subscription/billing
+  whole SaaS: all users across organizations, and later subscription/billing
   internals. Product CRUD does not live here.
 
-## V1 (implemented)
+## Status
 
-- `Client`, `Site`, `SitePlugin`, `SiteTheme` models + migrations
-- `WordPressClientService` — REST client, `X-Agent-Token` bearer auth, 10s timeout,
+### Shipped
+- [x] Core domain: `Client`, `Site`, `SitePlugin`, `SiteTheme` + migrations/factories
+- [x] `WordPressClientService` — REST client, `X-Agent-Token` auth, 10s timeout,
   marks site `offline` on failure
-- `SyncSiteStatusJob` (Horizon/Redis) — refreshes site status + upserts plugin/theme
+- [x] `SyncSiteStatusJob` (Horizon/Redis) — refreshes status + upserts plugin/theme
   inventory, removes stale rows
-- Sites CRUD + Clients CRUD in the main app (Form Requests, Inertia `<Form>` +
-  Wayfinder action bindings, delete confirmations via Dialog)
-- Filament panel (`/admin`): internal `UserResource` only
-- Inertia/React dashboard: stats cards, sites table, site detail, scan trigger
-- Companion WP agent plugin: `wp-agent/shoal-agent.php` — registers
-  `GET /wp-json/agent/v1/system-info`, token-checked via `hash_equals`
-  (`wp shoal token <token>` or the `SHOAL_AGENT_TOKEN` constant)
+- [x] Sites + Clients CRUD in the main app (Form Requests, Wayfinder-bound forms,
+  modal create flows, delete confirmations)
+- [x] Dashboard: stats cards, sites table, scan triggers; site page with agent
+  setup (token reveal/copy, plugin download)
+- [x] Companion WP agent plugin: `wp-agent/shoal-agent.php` —
+  `GET /wp-json/agent/v1/system-info`, `hash_equals` token check
+  (`wp shoal token <token>` or `SHOAL_AGENT_TOKEN` constant)
+- [x] Organizations: membership roles (owner/admin/member), session-based current
+  org, sidebar switcher, org settings (rename + member management), policies
+  enforcing role ranks, personal workspace on registration
+- [x] Filament panel: internal `UserResource` (all users + org counts)
+- [x] Design system: shadcn theme (light/dark OKLCH), borderless surfaces,
+  settings-mode sidebar, flash toasts, blurred modal backdrops
 
-## Revised incremental roadmap
+### Known gaps
+- Scans are **manual only** — no scheduled/automatic scanning yet
+- No uptime/status **history** (sites only store current status)
+- Redis is not installed locally, so Horizon/scheduled jobs can't run in dev yet
+- Agent plugin not yet tested against a real WordPress site
+- Member invitations require the invitee to already have an account
 
-### Phase 2 — Organizations (multi-tenancy) + billing
-- [x] Organization model with membership roles (owner/admin/member); users get a
-  personal workspace on registration.
-- [x] Clients and sites scoped to the current organization (session-based switcher
-  in the sidebar); policies enforce role ranks.
-- [x] Organization settings page (rename + member management) in the sidebar
-  settings mode; internal Filament panel shows org counts per user.
-- [ ] Stripe billing. Flat per-organization subscription tiers instead of
-  per-site per-addon metering. Cashier + webhooks.
-- [ ] Email invitations for members (currently: add existing users by email).
+## Next steps (recommended order)
 
-### Phase 3 — Vulnerability intelligence + scheduled scans
-- Patchstack (or WPScan) API integration; map installed plugin/theme slugs+versions
-  against the vulnerability DB.
-- Semver comparison job to flag outdated components (already have `update_available`
-  from the agent; add CVE severity columns).
-- Scheduled scans: Laravel scheduler fanning out `SyncSiteStatusJob` via
-  `Bus::batch()` per organization; `withoutOverlapping()`.
+1. **Scheduled scans** — per-site scan frequency setting; Laravel scheduler fanning
+   out `SyncSiteStatusJob` via `Bus::batch()` per organization; `withoutOverlapping()`.
+   Prereq: install Redis locally (`brew install redis && brew services start redis`).
+2. **Uptime monitoring** — `site_status_checks` history table + per-minute ping
+   jobs; status timeline on the site page; offline/online notifications.
+3. **Vulnerability intelligence** — Patchstack/WPScan API integration; map installed
+   plugin/theme slugs+versions against the vulnerability DB; CVE severity columns.
+4. **Billing** — Stripe Cashier, flat per-organization subscription tiers (not
+   per-site metering); Filament gains subscription internals.
+5. **Email invitations** — invite members by email (signed invite links).
 
-### Phase 4 — Safe updates
+## Later phases
+
+### Safe updates
 - Agent gains update actions (`POST /wp-json/agent/v1/updates`).
 - Pre/post visual comparison via Puppeteer screenshots (sidecar worker or
   `spatie/browsershot`); auto-rollback on failure.
-- Reference: ManageWP's worker signs every dashboard request with RSA over
-  `action + nonce` (12h validity, 24h replay blacklist) — adopt HMAC request signing +
-  nonce replay protection for the agent API before shipping write actions.
-  Evidence: `rea-artifacts/worker/src/MWP/EventListener/MasterRequest/AuthenticateRequest.php`,
-  `src/MWP/Security/NonceManager.php` (ManageWP Worker v4.9.38, GPL).
+- Before shipping write actions, adopt request signing + nonce replay protection
+  for the agent API (reference: ManageWP worker signs every request with RSA over
+  `action + nonce`, 12h validity, 24h replay blacklist — evidence in
+  `../managewp-clone/rea-artifacts/worker/src/MWP/`).
 
-### Phase 5 — Server-level management
+### Server-level management
 - SSH/WP-CLI execution, PHP version upgrades, Nginx cache purges.
 - Requires per-server credentials (encrypted casts + policy-gated actions).
 
