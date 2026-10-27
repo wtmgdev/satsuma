@@ -18,7 +18,6 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
-    SidebarGroup,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -123,18 +122,16 @@ export function AppSidebar() {
                     items={inSettings ? settingsNavItems : mainNavItems}
                     label={inSettings ? 'Settings' : 'Platform'}
                 />
-                {!inSettings && (
-                    <SidebarGroup className="px-2 py-0">
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <NotificationBell />
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroup>
-                )}
             </SidebarContent>
 
             <SidebarFooter>
+                {!inSettings && (
+                    <SidebarMenu className="mb-2">
+                        <SidebarMenuItem>
+                            <NotificationBell />
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                )}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

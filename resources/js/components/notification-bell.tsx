@@ -65,7 +65,7 @@ export function NotificationBell() {
                     )}
                 </SidebarMenuButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-80">
+            <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-80">
                 <div className="flex items-center justify-between px-3 py-2">
                     <span className="text-sm font-medium">Notifications</span>
                     {unread > 0 && (
