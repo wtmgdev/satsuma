@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Shoal Agent
  * Description: Companion REST agent for the Shoal WordPress management platform. Exposes read-only system info secured by a bearer token.
- * Version: 0.5.0
+ * Version: 0.6.0
  * Requires PHP: 7.4
  * Author: Shoal
  * Text Domain: shoal-agent
@@ -76,10 +76,18 @@ add_action(
                 require_once ABSPATH.'wp-admin/includes/plugin.php';
                 require_once ABSPATH.'wp-admin/includes/update.php';
 
-                // Force a fresh check against wordpress.org and each plugin's
-                // own update server (premium updaters hook
-                // pre_set_site_transient_update_plugins and only inject their
-                // data while this runs), then read the refreshed transients.
+                // Premium updaters (e.g. WP Migrate) throttle their own remote
+                // checks and skip injecting on every transient rebuild, so a
+                // forced check would drop their entries. Snapshot the existing
+                // response entries, force the fresh check, then restore any
+                // entries the fresh check lost.
+                $previousPluginResponses = shoal_agent_to_array(
+                    shoal_agent_to_array(get_site_transient('update_plugins'))['response'] ?? []
+                );
+                $previousThemeResponses = shoal_agent_to_array(
+                    shoal_agent_to_array(get_site_transient('update_themes'))['response'] ?? []
+                );
+
                 wp_version_check();
                 wp_update_plugins();
                 wp_update_themes();
@@ -89,6 +97,18 @@ add_action(
 
                 $pluginResponses = shoal_agent_to_array($updatePlugins['response'] ?? []);
                 $themeResponses = shoal_agent_to_array($updateThemes['response'] ?? []);
+
+                foreach ($previousPluginResponses as $file => $entry) {
+                    if (!isset($pluginResponses[$file]) && !isset($updatePlugins['no_update'][$file])) {
+                        $pluginResponses[$file] = $entry;
+                    }
+                }
+
+                foreach ($previousThemeResponses as $stylesheet => $entry) {
+                    if (!isset($themeResponses[$stylesheet]) && !isset($updateThemes['no_update'][$stylesheet])) {
+                        $themeResponses[$stylesheet] = $entry;
+                    }
+                }
 
                 $coreUpdate = null;
                 foreach (shoal_agent_to_array(get_core_updates(['dismissed' => false])) as $coreOffer) {
