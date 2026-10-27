@@ -275,6 +275,52 @@ export default function SiteShow({
                     </CardContent>
                 </Card>
 
+                {site.whois && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Domain</CardTitle>
+                            <CardDescription>
+                                {site.whois.domain} — from RDAP
+                                {site.whois_checked_at && ` · checked ${timeAgo(site.whois_checked_at)}`}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+                                <div className="flex flex-col gap-1">
+                                    <dt className="text-xs text-muted-foreground">Registrar</dt>
+                                    <dd className="font-medium">
+                                        {site.whois.registrar ?? '—'}
+                                    </dd>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <dt className="text-xs text-muted-foreground">Registered</dt>
+                                    <dd className="font-medium">
+                                        {site.whois.registered_at
+                                            ? new Date(site.whois.registered_at).toLocaleDateString()
+                                            : '—'}
+                                    </dd>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <dt className="text-xs text-muted-foreground">Expires</dt>
+                                    <dd className="font-medium">
+                                        {site.whois.expires_at
+                                            ? new Date(site.whois.expires_at).toLocaleDateString()
+                                            : '—'}
+                                    </dd>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <dt className="text-xs text-muted-foreground">Nameservers</dt>
+                                    <dd className="font-medium">
+                                        {site.whois.nameservers?.length
+                                            ? site.whois.nameservers.join(', ')
+                                            : '—'}
+                                    </dd>
+                                </div>
+                            </dl>
+                        </CardContent>
+                    </Card>
+                )}
+
                 <Card>
                     <CardHeader>
                         <CardTitle>Plugins</CardTitle>

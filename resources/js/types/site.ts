@@ -47,6 +47,7 @@ export type Site = {
         expires_at?: string | null;
         nameservers?: string[];
     } | null;
+    whois_checked_at?: string | null;
     plugins?: SitePlugin[];
     themes?: SiteTheme[];
 };
