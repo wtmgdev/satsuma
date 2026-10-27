@@ -11,6 +11,7 @@ use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Site;
 use App\ScanStatus;
+use App\Services\VulnerabilityService;
 use App\Services\VersionFeedService;
 use App\Services\WordPressClientService;
 use App\ConnectionStatus;
@@ -104,7 +105,21 @@ class SiteController extends Controller
             'agentToken' => $site->api_token,
             'versionInfo' => app(VersionFeedService::class)->check($site),
             'agentPluginVersion' => AgentPluginController::version(),
+            'vulnerabilities' => $this->vulnerabilitySummary($site),
         ]);
+    }
+
+    /**
+     * Worst severity + count per component, keyed by "type:slug".
+     */
+    private function vulnerabilitySummary(Site $site): array
+    {
+        $vulnerabilities = app(VulnerabilityService::class)->forSite($site);
+
+        return collect($vulnerabilities)->map(fn (array $found): array => [
+            'severity' => VulnerabilityService::worstSeverity($found),
+            'count' => count($found),
+        ])->all();
     }
 
     public function edit(Request $request, Site $site): Response

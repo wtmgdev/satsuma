@@ -60,11 +60,14 @@ import {
 import type { Site, SitePlugin } from '@/types';
 import type { PhpInfo, WpInfo } from '@/components/version-badges';
 
+type VulnerabilitySummary = Record<string, { severity: string; count: number }>;
+
 export default function SiteShow({
     site,
     agentToken,
     versionInfo,
     agentPluginVersion,
+    vulnerabilities,
 }: {
     site: Site;
     agentToken: string;
@@ -73,6 +76,7 @@ export default function SiteShow({
         wp: WpInfo;
     };
     agentPluginVersion: string | null;
+    vulnerabilities: VulnerabilitySummary;
 }) {
     const runScan = () => {
         router.post(siteScan(site).url, {}, { preserveScroll: true });
@@ -211,7 +215,7 @@ export default function SiteShow({
                     </CardHeader>
                     <CardContent>
                         {site.plugins?.length ? (
-                            <ComponentTable items={site.plugins} />
+                            <ComponentTable items={site.plugins} type="plugin" vulnerabilities={vulnerabilities} />
                         ) : (
                             <Empty>
                                 <EmptyHeader>
@@ -237,7 +241,7 @@ export default function SiteShow({
                     </CardHeader>
                     <CardContent>
                         {site.themes?.length ? (
-                            <ComponentTable items={site.themes} />
+                            <ComponentTable items={site.themes} type="theme" vulnerabilities={vulnerabilities} />
                         ) : (
                             <Empty>
                                 <EmptyHeader>
@@ -258,7 +262,15 @@ export default function SiteShow({
     );
 }
 
-function ComponentTable({ items }: { items: SitePlugin[] }) {
+function ComponentTable({
+    items,
+    type,
+    vulnerabilities,
+}: {
+    items: SitePlugin[];
+    type: 'plugin' | 'theme';
+    vulnerabilities: VulnerabilitySummary;
+}) {
     return (
         <Table>
             <TableHeader>
@@ -268,6 +280,7 @@ function ComponentTable({ items }: { items: SitePlugin[] }) {
                     <TableHead>Version</TableHead>
                     <TableHead>Active</TableHead>
                     <TableHead>Update</TableHead>
+                    <TableHead>Security</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -291,6 +304,9 @@ function ComponentTable({ items }: { items: SitePlugin[] }) {
                             ) : (
                                 <span className="text-sm text-muted-foreground">Up to date</span>
                             )}
+                        </TableCell>
+                        <TableCell>
+                            <SeverityBadge summary={vulnerabilities[`${type}:${item.slug}`]} />
                         </TableCell>
                     </TableRow>
                 ))}
@@ -422,6 +438,25 @@ function DeleteSiteButton({ site }: { site: Site }) {
                 </Form>
             </DialogContent>
         </Dialog>
+    );
+}
+
+const severityVariant: Record<string, 'destructive' | 'warning' | 'secondary' | 'outline'> = {
+    critical: 'destructive',
+    high: 'warning',
+    medium: 'secondary',
+    low: 'outline',
+};
+
+function SeverityBadge({ summary }: { summary?: { severity: string; count: number } }) {
+    if (!summary) {
+        return <span className="text-sm text-muted-foreground">No issues</span>;
+    }
+
+    return (
+        <Badge variant={severityVariant[summary.severity] ?? 'outline'}>
+            {summary.count} {summary.severity}
+        </Badge>
     );
 }
 

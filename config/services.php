@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'vuln_feed' => [
+        'provider' => env('VULN_FEED_PROVIDER', 'wordfence'),
+        'wordfence' => [
+            'token' => env('WORDFENCE_API_TOKEN'),
+        ],
+        'patchstack' => [
+            'token' => env('PATCHSTACK_API_TOKEN'),
+        ],
+    ],
+
 ];

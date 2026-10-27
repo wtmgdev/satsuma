@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\VulnerabilityFeed\PatchstackFeed;
+use App\Services\VulnerabilityFeed\VulnerabilityFeed;
+use App\Services\VulnerabilityFeed\WordfenceFeed;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Date;
@@ -17,6 +20,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(VulnerabilityFeed::class, function () {
+            $provider = (string) config('services.vuln_feed.provider', 'wordfence');
+
+            return match ($provider) {
+                'patchstack' => new PatchstackFeed,
+                default => new WordfenceFeed,
+            };
+        });
+
         RedirectResponse::macro('flashToast', function (string $type, string $message): RedirectResponse {
             Inertia::flash('toast', ['type' => $type, 'message' => $message]);
 
