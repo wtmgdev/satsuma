@@ -45,7 +45,7 @@ class AgentPluginController extends Controller
         $zip->addEmptyDir('shoal-agent');
         $zip->addFile($pluginPath, 'shoal-agent/shoal-agent.php');
 
-        foreach (glob(dirname($pluginPath).'/assets/*.png') ?: [] as $asset) {
+        foreach (glob(dirname($pluginPath).'/assets/*.{png,svg}', GLOB_BRACE) ?: [] as $asset) {
             $zip->addFile($asset, 'shoal-agent/assets/'.basename($asset));
         }
 

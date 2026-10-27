@@ -207,16 +207,16 @@ function shoal_agent_render_settings_page(): void
     $assets = plugins_url('assets/', __FILE__);
     $connected = $token !== '';
     ?>
-    <div class="wrap shoal-agent-wrap" style="max-width:1100px;">
-        <div style="margin:20px 0 0 -22px;">
+    <div class="wrap shoal-agent-wrap" style="max-width:1180px;">
+        <div style="margin:20px 0 0;">
             <img src="<?php echo esc_url($assets.'banner-772x250.png'); ?>"
                  srcset="<?php echo esc_url($assets.'banner-1544x500.png'); ?> 2x"
                  alt="<?php esc_attr_e('Shoal — WordPress fleet management', 'shoal-agent'); ?>"
-                 style="width:100%;max-width:772px;height:auto;display:block;border-radius:8px;" />
+                 style="width:100%;height:auto;display:block;border-radius:8px;" />
         </div>
 
-        <div style="display:flex;gap:24px;align-items:flex-start;margin-top:24px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:380px;background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:24px;">
+        <div style="margin-top:24px;">
+            <div style="background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:24px;max-width:640px;">
                 <h2 style="margin-top:0;"><?php esc_html_e('Connect this site to Shoal', 'shoal-agent'); ?></h2>
                 <p><?php esc_html_e('Paste the API token generated for this site in your Shoal dashboard (site page → Agent Setup).', 'shoal-agent'); ?></p>
 
@@ -276,14 +276,6 @@ function shoal_agent_render_settings_page(): void
                 <p><code><?php echo esc_url(rest_url('agent/v1/system-info')); ?></code></p>
             </div>
 
-            <div style="flex:1;min-width:380px;">
-                <img src="<?php echo esc_url($assets.'screenshot-1.png'); ?>"
-                     alt="<?php esc_attr_e('The Shoal dashboard', 'shoal-agent'); ?>"
-                     style="width:100%;height:auto;display:block;border-radius:8px;border:1px solid #dcdcde;" />
-                <p style="color:#646970;font-size:13px;margin-top:8px;">
-                    <?php esc_html_e('Sites, updates and security status in one place — from your Shoal dashboard.', 'shoal-agent'); ?>
-                </p>
-            </div>
         </div>
     </div>
     <?php
