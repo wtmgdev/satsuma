@@ -31,23 +31,30 @@ Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + 
 - [x] Filament panel: internal `UserResource` (all users + org counts)
 - [x] Design system: shadcn theme (light/dark OKLCH), borderless surfaces,
   settings-mode sidebar, flash toasts, blurred modal backdrops
+- [x] Vulnerability intelligence: Wordfence Intelligence production feed
+  (provider-agnostic `VulnerabilityFeed` contract, Patchstack stub for a later
+  swap), memory-safe streaming index, CVSS severity per component on the site
+  page, daily scheduled refresh
+- [x] Connection pings + scan lifecycle (queued/running/idle) with live UI
+  updates via partial-reload polling; synchronous Test Connection with
+  definitive result toasts
 
 ### Known gaps
 - Scans are **manual only** — no scheduled/automatic scanning yet
 - No uptime/status **history** (sites only store current status)
-- Redis is not installed locally, so Horizon/scheduled jobs can't run in dev yet
-- Agent plugin not yet tested against a real WordPress site
+- Agent plugin not yet tested against a real WordPress site beyond the
+  first site (botniska.wtmgdev.com — working)
 - Member invitations require the invitee to already have an account
 
 ## Next steps (recommended order)
 
 1. **Scheduled scans** — per-site scan frequency setting; Laravel scheduler fanning
    out `SyncSiteStatusJob` via `Bus::batch()` per organization; `withoutOverlapping()`.
-   Prereq: install Redis locally (`brew install redis && brew services start redis`).
-2. **Uptime monitoring** — `site_status_checks` history table + per-minute ping
-   jobs; status timeline on the site page; offline/online notifications.
-3. **Vulnerability intelligence** — Patchstack/WPScan API integration; map installed
-   plugin/theme slugs+versions against the vulnerability DB; CVE severity columns.
+2. **Client reports** — severity data is now available per component; reports list
+   pending updates with severity, WP/PHP currency and site status.
+3. **Local dev environment** — Redis (DBngin) + Horizon run; `composer run dev`
+   starts server + horizon + vite + logs (Herd PHP first on PATH; Homebrew php
+   unlinked).
 4. **Billing** — Stripe Cashier, flat per-organization subscription tiers (not
    per-site metering); Filament gains subscription internals.
 5. **Email invitations** — invite members by email (signed invite links).
