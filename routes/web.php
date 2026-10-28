@@ -36,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('sites/{site}/pagespeed', [SiteController::class, 'runPageSpeed'])->name('sites.pagespeed');
 
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('usage', [UsageController::class, 'index'])->name('usage');
     Route::post('notifications/read', [NotificationController::class, 'markAllRead'])->name('notifications.read');
 });
 

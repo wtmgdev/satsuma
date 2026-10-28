@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    BarChart3,
     Building2,
     Globe,
     LayoutGrid,
@@ -48,6 +49,11 @@ const mainNavItems: NavItem[] = [
         title: 'Clients',
         href: clientsIndex().url,
         icon: UserRound,
+    },
+    {
+        title: 'Usage',
+        href: '/usage',
+        icon: BarChart3,
     },
 ];
 

@@ -50,7 +50,8 @@ class CreditService
 
             // Unlimited orgs (our own) still get a ledger entry — spend
             // analytics stay complete — but nothing is enforced.
-            if ($fresh?->credits_unlimited) {
+            // Dry run (local dev) behaves the same way.
+            if ($fresh?->credits_unlimited || config('credits.dry_run')) {
                 CreditTransaction::create([
                     'organization_id' => $organization->id,
                     'user_id' => $user?->id,

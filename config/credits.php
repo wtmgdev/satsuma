@@ -21,4 +21,7 @@ return [
 
     // Low-balance warning threshold (fraction of allowance).
     'low_balance_ratio' => 0.2,
+
+    // Record usage but never enforce balances (local development).
+    'dry_run' => env('METERED_ACTIONS_DRY_RUN', false),
 ];

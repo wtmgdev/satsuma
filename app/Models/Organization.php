@@ -76,6 +76,11 @@ class Organization extends Model
         return $this->hasMany(Site::class);
     }
 
+    public function creditTransactions(): HasMany
+    {
+        return $this->hasMany(CreditTransaction::class);
+    }
+
     public function roleFor(User $user): ?string
     {
         $role = $this->members()->where('users.id', $user->id)->first()?->pivot?->role;
