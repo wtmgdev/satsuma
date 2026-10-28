@@ -259,18 +259,18 @@ export default function Welcome() {
                     <footer className="mx-auto flex w-full max-w-6xl items-center justify-between border-t border-border px-6 py-6 text-xs text-muted-foreground">
                         <span>Satsuma</span>
                         <nav className="flex items-center gap-4">
-                            <Link
-                                href="/privacy"
+                            <a
+                                href="/privacy.html"
                                 className="hover:text-foreground"
                             >
                                 Privacy policy
-                            </Link>
-                            <Link
-                                href="/cookies"
+                            </a>
+                            <a
+                                href="/cookies.html"
                                 className="hover:text-foreground"
                             >
                                 Cookie policy
-                            </Link>
+                            </a>
                         </nav>
                     </footer>
                 </div>
