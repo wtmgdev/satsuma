@@ -50,6 +50,11 @@ class Site extends Model
         ];
     }
 
+    public function analyses(): HasMany
+    {
+        return $this->hasMany(SiteAnalysis::class);
+    }
+
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);

@@ -52,6 +52,26 @@ export type Site = {
     themes?: SiteTheme[];
 };
 
+export type SiteAnalyses = {
+    pagespeed_mobile?: SiteAnalysis | null;
+    pagespeed_desktop?: SiteAnalysis | null;
+};
+
+export type PageSpeedPayload = {
+    strategy: 'mobile' | 'desktop';
+    scores: Record<string, number | null>;
+    metrics: { id: string; label: string; value: string; score: number | null }[];
+    opportunities: { title: string; savings: string }[];
+};
+
+export type SiteAnalysis = {
+    id: number;
+    type: string;
+    score: number | null;
+    data: PageSpeedPayload | null;
+    created_at: string;
+};
+
 export type DashboardStats = {
     totalSites: number;
     onlineSites: number;

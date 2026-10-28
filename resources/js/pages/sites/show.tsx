@@ -18,6 +18,7 @@ import {
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
 import InputError from '@/components/input-error';
 import { PhpLogo, WpLogo } from '@/components/brand-icons';
+import { PageSpeedPanel } from '@/components/pagespeed-panel';
 import { usePollWhile } from '@/hooks/use-poll-while';
 import {
     index as sitesIndex,
@@ -79,7 +80,7 @@ import {
     TabsList,
     TabsTrigger,
 } from '@/components/ui/tabs';
-import type { Client, Site, SitePlugin } from '@/types';
+import type { Client, Site, SiteAnalyses, SitePlugin } from '@/types';
 import type { PhpInfo, WpInfo } from '@/components/version-badges';
 import { versionCompare } from '@/components/version-badges';
 
@@ -129,6 +130,7 @@ export default function SiteShow({
     versionInfo,
     agentPluginVersion,
     vulnerabilities,
+    analyses,
 }: {
     site: Site;
     clients: Client[];
@@ -139,6 +141,7 @@ export default function SiteShow({
     };
     agentPluginVersion: string | null;
     vulnerabilities: VulnerabilitySummary;
+    analyses: SiteAnalyses;
 }) {
     const runScan = () => {
         router.post(siteScan(site).url, {}, { preserveScroll: true });
@@ -290,8 +293,17 @@ export default function SiteShow({
                         <TabsTrigger value="themes">
                             Themes{site.themes?.length ? ` · ${site.themes.length}` : ''}
                         </TabsTrigger>
+                        <TabsTrigger value="performance">Performance</TabsTrigger>
                         <TabsTrigger value="server">Server info</TabsTrigger>
                     </TabsList>
+
+                    <TabsContent value="performance">
+                        <PageSpeedPanel
+                            siteId={site.id}
+                            mobile={analyses.pagespeed_mobile}
+                            desktop={analyses.pagespeed_desktop}
+                        />
+                    </TabsContent>
 
                     <TabsContent value="plugins">
                         <Card>

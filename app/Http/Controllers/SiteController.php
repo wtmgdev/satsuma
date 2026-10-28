@@ -6,9 +6,11 @@ use App\Actions\DispatchSiteJob;
 use App\Http\Requests\StoreSiteRequest;
 use App\Http\Requests\UpdateSiteRequest;
 use App\Jobs\PingSiteJob;
+use App\Jobs\RunPageSpeedJob;
 use App\Jobs\SyncSiteStatusJob;
 use App\Models\Client;
 use App\Models\Organization;
+use App\Models\SiteAnalysis;
 use App\Models\Site;
 use App\ScanStatus;
 use App\Services\VulnerabilityService;
@@ -107,7 +109,23 @@ class SiteController extends Controller
             'versionInfo' => app(VersionFeedService::class)->check($site),
             'agentPluginVersion' => AgentPluginController::version(),
             'vulnerabilities' => $this->vulnerabilitySummary($site),
+            'analyses' => [
+                'pagespeed_mobile' => SiteAnalysis::latestFor($site, 'pagespeed_mobile'),
+                'pagespeed_desktop' => SiteAnalysis::latestFor($site, 'pagespeed_desktop'),
+            ],
         ]);
+    }
+
+    public function runPageSpeed(Request $request, Site $site, DispatchSiteJob $dispatch): RedirectResponse
+    {
+        $this->authorize('update', $site);
+
+        foreach (['mobile', 'desktop'] as $strategy) {
+            $dispatch->handle($site, new RunPageSpeedJob($site, $strategy, force: true));
+        }
+
+        return redirect()->route('sites.show', $site)
+            ->flashToast('info', 'PageSpeed analysis queued — results appear in the Performance tab in a minute or two.');
     }
 
     /**

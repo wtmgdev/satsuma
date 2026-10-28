@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sites', SiteController::class)->except(['create', 'edit']);
     Route::post('sites/{site}/scan', [SiteController::class, 'scan'])->name('sites.scan');
     Route::post('sites/{site}/ping', [SiteController::class, 'ping'])->name('sites.ping');
+    Route::post('sites/{site}/pagespeed', [SiteController::class, 'runPageSpeed'])->name('sites.pagespeed');
 
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read', [NotificationController::class, 'markAllRead'])->name('notifications.read');
