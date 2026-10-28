@@ -42,6 +42,19 @@ function scoreColor(score: number | null): string {
     return 'text-red-500';
 }
 
+function scoreBarColor(score: number | null): string {
+    if (score === null) {
+        return 'bg-muted-foreground';
+    }
+    if (score >= 90) {
+        return 'bg-emerald-500';
+    }
+    if (score >= 50) {
+        return 'bg-amber-500';
+    }
+    return 'bg-red-500';
+}
+
 function ScoreStat({ label, score }: { label: string; score: number | null }) {
     return (
         <div className="flex flex-col gap-1.5">
@@ -53,7 +66,7 @@ function ScoreStat({ label, score }: { label: string; score: number | null }) {
             <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
                 {score !== null && (
                     <div
-                        className={`h-full rounded-full ${scoreColor(score).replace('text-', 'bg-')}`}
+                        className={`h-full rounded-full ${scoreBarColor(score)}`}
                         style={{ width: `${score}%` }}
                     />
                 )}
