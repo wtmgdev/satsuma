@@ -209,12 +209,12 @@ it('serves the agent plugin as an installable zip', function () {
 
     $response = $this->actingAs($user)->get('/agent-plugin/download');
 
-    $response->assertOk()->assertDownload('shoal-agent.zip');
+    $response->assertOk()->assertDownload('satsuma-agent.zip');
 
     expect($response->headers->get('X-Agent-Plugin-Version'))->toMatch('/^\d+\.\d+\.\d+$/');
 
     $zip = new ZipArchive;
     $zip->open($response->getFile()->getPathname());
 
-    expect($zip->locateName('shoal-agent/shoal-agent.php'))->not->toBeFalse();
+    expect($zip->locateName('satsuma-agent/satsuma-agent.php'))->not->toBeFalse();
 });

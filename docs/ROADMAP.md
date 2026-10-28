@@ -22,9 +22,9 @@ Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + 
   modal create flows, delete confirmations)
 - [x] Dashboard: stats cards, sites table, scan triggers; site page with agent
   setup (token reveal/copy, plugin download)
-- [x] Companion WP agent plugin: `wp-agent/shoal-agent.php` —
+- [x] Companion WP agent plugin: `wp-agent/satsuma-agent.php` —
   `GET /wp-json/agent/v1/system-info`, `hash_equals` token check
-  (`wp shoal token <token>` or `SHOAL_AGENT_TOKEN` constant)
+  (`wp satsuma token <token>` or `SHOAL_AGENT_TOKEN` constant)
 - [x] Organizations: membership roles (owner/admin/member), session-based current
   org, sidebar switcher, org settings (rename + member management), policies
   enforcing role ranks, personal workspace on registration
@@ -77,10 +77,10 @@ Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + 
 ## Local development
 
 - `php artisan serve` — main app (Inertia/React)
-- `/admin` — Filament panel (seeded: `admin@shoal.test` / `password`)
+- `/admin` — Filament panel (seeded: `admin@satsuma.test` / `password`)
 - `php artisan horizon` — queue workers (requires Redis; `QUEUE_CONNECTION=redis`)
 - Tests: `php artisan test` (SQLite in-memory, sync queue — no Redis needed)
-- MySQL 8 runs via Herd's bundled `mysqld` (database `shoal`)
+- MySQL 8 runs via Herd's bundled `mysqld` (database `satsuma`)
 
 ## REA evidence trail
 

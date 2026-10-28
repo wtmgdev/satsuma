@@ -9,7 +9,7 @@ class AgentPluginController extends Controller
 {
     public static function pluginPath(): string
     {
-        return base_path('wp-agent/shoal-agent.php');
+        return base_path('wp-agent/satsuma-agent.php');
     }
 
     /**
@@ -36,22 +36,22 @@ class AgentPluginController extends Controller
 
         abort_unless(is_file($pluginPath), 404);
 
-        $zipPath = tempnam(sys_get_temp_dir(), 'shoal-agent-').'.zip';
+        $zipPath = tempnam(sys_get_temp_dir(), 'satsuma-agent-').'.zip';
 
         $zip = new ZipArchive;
 
         abort_unless($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true, 500);
 
-        $zip->addEmptyDir('shoal-agent');
-        $zip->addFile($pluginPath, 'shoal-agent/shoal-agent.php');
+        $zip->addEmptyDir('satsuma-agent');
+        $zip->addFile($pluginPath, 'satsuma-agent/satsuma-agent.php');
 
         foreach (glob(dirname($pluginPath).'/assets/*.{png,svg}', GLOB_BRACE) ?: [] as $asset) {
-            $zip->addFile($asset, 'shoal-agent/assets/'.basename($asset));
+            $zip->addFile($asset, 'satsuma-agent/assets/'.basename($asset));
         }
 
         $zip->close();
 
-        $response = response()->download($zipPath, 'shoal-agent.zip')
+        $response = response()->download($zipPath, 'satsuma-agent.zip')
             ->deleteFileAfterSend();
 
         $response->headers->set('X-Agent-Plugin-Version', (string) self::version());

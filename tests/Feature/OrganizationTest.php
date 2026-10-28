@@ -150,13 +150,13 @@ it('renames the organization', function () {
 
 it('authenticates a user with an organization', function () {
     $user = User::factory()->create([
-        'email' => 'seeded@shoal.test',
+        'email' => 'seeded@satsuma.test',
         'password' => Hash::make('password'),
     ]);
     Organization::createWithOwner($user, 'Seeded Org');
 
     $this->post('/login', [
-        'email' => 'seeded@shoal.test',
+        'email' => 'seeded@satsuma.test',
         'password' => 'password',
     ])->assertRedirect('/dashboard');
 });
