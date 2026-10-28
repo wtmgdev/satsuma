@@ -1,6 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
 import { BarChart3, Gauge, Sparkles, Zap } from 'lucide-react';
-import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -86,8 +85,6 @@ export default function Usage({
         <>
             <Head title="Usage" />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
-                <AppSidebarHeader />
-
                 <div className="flex flex-col gap-2">
                     <h1 className="text-2xl font-semibold tracking-tight">Usage</h1>
                     <p className="text-sm text-muted-foreground">
@@ -249,3 +246,12 @@ export default function Usage({
         </>
     );
 }
+
+Usage.layout = {
+    breadcrumbs: [
+        {
+            title: 'Usage',
+            href: '/usage',
+        },
+    ],
+};
