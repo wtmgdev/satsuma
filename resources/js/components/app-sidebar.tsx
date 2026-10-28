@@ -10,6 +10,7 @@ import {
     UserRoundCog,
 } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import { CreditsIndicator } from '@/components/credits-indicator';
 import { NavMain } from '@/components/nav-main';
 import { NotificationBell } from '@/components/notification-bell';
 import { NavUser } from '@/components/nav-user';
@@ -125,6 +126,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
+                <CreditsIndicator />
                 {!inSettings && (
                     <SidebarMenu className="mb-2">
                         <SidebarMenuItem>

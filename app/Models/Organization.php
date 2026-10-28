@@ -17,7 +17,21 @@ class Organization extends Model
     protected $fillable = [
         'name',
         'slug',
+        'credits_balance',
+        'credits_allowance',
+        'credits_unlimited',
+        'credits_reset_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'credits_balance' => 'integer',
+            'credits_allowance' => 'integer',
+            'credits_unlimited' => 'boolean',
+            'credits_reset_at' => 'datetime',
+        ];
+    }
 
     public static function createWithOwner(User $user, string $name): self
     {

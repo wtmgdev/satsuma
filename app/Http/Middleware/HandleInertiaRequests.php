@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Organization;
+use App\Services\CreditService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -48,7 +50,24 @@ class HandleInertiaRequests extends Middleware
                 : [],
             'currentOrganization' => $request->attributes->get('currentOrganization'),
             'unreadNotifications' => $user ? $user->unreadNotifications()->count() : 0,
+            'credits' => $this->credits($request),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+        ];
+    }
+
+    private function credits(Request $request): ?array
+    {
+        $organization = $request->attributes->get('currentOrganization');
+
+        if (! $organization instanceof Organization) {
+            return null;
+        }
+
+        return [
+            'balance' => $organization->credits_balance,
+            'allowance' => app(CreditService::class)->allowance($organization),
+            'unlimited' => $organization->credits_unlimited,
+            'resetsAt' => $organization->credits_reset_at?->toIso8601String(),
         ];
     }
 }

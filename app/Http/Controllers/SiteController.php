@@ -13,6 +13,7 @@ use App\Models\Organization;
 use App\Models\SiteAnalysis;
 use App\Models\Site;
 use App\ScanStatus;
+use App\Services\CreditService;
 use App\Services\VulnerabilityService;
 use App\Services\VersionFeedService;
 use App\Services\WordPressClientService;
@@ -116,9 +117,17 @@ class SiteController extends Controller
         ]);
     }
 
-    public function runPageSpeed(Request $request, Site $site, DispatchSiteJob $dispatch): RedirectResponse
+    public function runPageSpeed(Request $request, Site $site, DispatchSiteJob $dispatch, CreditService $credits): RedirectResponse
     {
         $this->authorize('update', $site);
+
+        // 2 analyses + 2 AI summaries, charged upfront.
+        if (! $credits->charge($site->organization, 'pagespeed_analysis', 2, $request->user())
+            || ! $credits->charge($site->organization, 'ai_summary', 2, $request->user())
+        ) {
+            return redirect()->route('sites.show', $site)
+                ->flashToast('error', 'Not enough credits — your organization is out of credits for this month.');
+        }
 
         foreach (['mobile', 'desktop'] as $strategy) {
             $dispatch->handle($site, new RunPageSpeedJob($site, $strategy, force: true));

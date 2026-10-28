@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('vulnfeed:refresh')->dailyAt('03:17')->withoutOverlapping();
 Schedule::command('sites:ping')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('sites:whois')->dailyAt('04:05')->withoutOverlapping();
+Schedule::command('credits:reset')->dailyAt('05:00')->withoutOverlapping();
