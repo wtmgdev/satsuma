@@ -20,8 +20,8 @@ class OrganizationsTable
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('users_count')
-                    ->counts('users')
+                TextColumn::make('members_count')
+                    ->counts('members')
                     ->label('Members')
                     ->badge(),
                 TextColumn::make('credits_balance')
