@@ -2,10 +2,16 @@ import { router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Gauge, RefreshCw, Sparkles, Zap } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
 import { usePollWhile } from '@/hooks/use-poll-while';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     Card,
     CardContent,
@@ -119,21 +125,34 @@ function StrategyCard({
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
                 {analysis.summary && (
-                    <div className="flex flex-col gap-2 rounded-lg border border-border/40 bg-muted/30 p-4">
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                            <Sparkles className="size-3.5 text-orange-400" />
-                            AI summary
-                        </span>
-                        <p className="text-sm font-medium">{analysis.summary.headline}</p>
-                        <ul className="flex flex-col gap-1.5">
-                            {analysis.summary.points.map((point) => (
-                                <li key={point} className="flex gap-2 text-sm text-muted-foreground">
-                                    <span className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground" />
-                                    {point}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <Collapsible>
+                        <div className="flex flex-col gap-2 rounded-lg border border-border/40 bg-muted/30">
+                            <CollapsibleTrigger asChild>
+                                <button className="flex w-full items-center justify-between px-4 py-3 text-left">
+                                    <span className="flex min-w-0 items-center gap-2">
+                                        <Sparkles className="size-3.5 shrink-0 text-orange-400" />
+                                        <span className="text-xs font-medium text-muted-foreground">
+                                            AI summary
+                                        </span>
+                                        <span className="truncate text-sm font-medium">
+                                            {analysis.summary.headline}
+                                        </span>
+                                    </span>
+                                    <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
+                                </button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <ul className="flex flex-col gap-1.5 px-4 pb-3">
+                                    {analysis.summary.points.map((point) => (
+                                        <li key={point} className="flex gap-2 text-sm text-muted-foreground">
+                                            <span className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground" />
+                                            {point}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CollapsibleContent>
+                        </div>
+                    </Collapsible>
                 )}
 
                 <div className="grid grid-cols-4 gap-3">
