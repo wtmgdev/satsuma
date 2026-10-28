@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Gauge, RefreshCw, Zap } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
@@ -42,42 +42,21 @@ function scoreColor(score: number | null): string {
     return 'text-red-500';
 }
 
-function ScoreRing({ label, score }: { label: string; score: number | null }) {
-    const radius = 26;
-    const circumference = 2 * Math.PI * radius;
-    const progress = ((score ?? 0) / 100) * circumference;
-
+function ScoreStat({ label, score }: { label: string; score: number | null }) {
     return (
-        <div className="flex flex-col items-center gap-1.5">
-            <div className="relative size-16">
-                <svg viewBox="0 0 64 64" className="size-16 -rotate-90">
-                    <circle
-                        cx="32"
-                        cy="32"
-                        r={radius}
-                        fill="none"
-                        strokeWidth="5"
-                        className="stroke-muted"
+        <div className="flex flex-col gap-1.5">
+            <span
+                className={`text-2xl font-semibold tabular-nums ${scoreColor(score)}`}
+            >
+                {score ?? '—'}
+            </span>
+            <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                {score !== null && (
+                    <div
+                        className={`h-full rounded-full ${scoreColor(score).replace('text-', 'bg-')}`}
+                        style={{ width: `${score}%` }}
                     />
-                    {score !== null && (
-                        <circle
-                            cx="32"
-                            cy="32"
-                            r={radius}
-                            fill="none"
-                            strokeWidth="5"
-                            strokeLinecap="round"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={circumference - progress}
-                            className={scoreColor(score).replace('text-', 'stroke-')}
-                        />
-                    )}
-                </svg>
-                <span
-                    className={`absolute inset-0 flex items-center justify-center text-lg font-semibold tabular-nums ${scoreColor(score)}`}
-                >
-                    {score ?? '—'}
-                </span>
+                )}
             </div>
             <span className="text-xs text-muted-foreground">{label}</span>
         </div>
@@ -126,9 +105,9 @@ function StrategyCard({
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-3">
                     {CATEGORIES.map((category) => (
-                        <ScoreRing
+                        <ScoreStat
                             key={category.key}
                             label={category.label}
                             score={data.scores[category.key] ?? null}
@@ -190,8 +169,9 @@ export function PageSpeedPanel({
     desktop: SiteAnalysis | null | undefined;
 }) {
     const [analyzing, setAnalyzing] = useState(false);
+    const latestStamp = mobile?.created_at ?? desktop?.created_at ?? null;
 
-    usePollWhile(analyzing, ['site'], 5000, 36);
+    usePollWhile(analyzing, ['site', 'analyses'], 5000, 36);
 
     useEffect(() => {
         if (!analyzing) {
@@ -201,6 +181,14 @@ export function PageSpeedPanel({
 
         return () => window.clearTimeout(timer);
     }, [analyzing]);
+
+    const stampRef = useRef(latestStamp);
+    useEffect(() => {
+        if (analyzing && stampRef.current !== latestStamp) {
+            stampRef.current = latestStamp;
+            setAnalyzing(false);
+        }
+    }, [latestStamp, analyzing]);
 
     const run = () => {
         setAnalyzing(true);

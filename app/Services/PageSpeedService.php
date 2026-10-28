@@ -39,14 +39,18 @@ class PageSpeedService
         }
 
         try {
+            // Guzzle serializes array query params with [0] indices, which the
+            // PSI API ignores — build the repeated category params manually.
+            $query = http_build_query([
+                'url' => $site->url,
+                'strategy' => $strategy,
+                'key' => $key,
+            ]);
+            $categories = implode('&category=', ['performance', 'accessibility', 'best-practices', 'seo']);
+
             $response = Http::timeout(180)
                 ->connectTimeout(10)
-                ->get(self::API_URL, [
-                    'url' => $site->url,
-                    'strategy' => $strategy,
-                    'category' => ['performance', 'accessibility', 'best-practices', 'seo'],
-                    'key' => $key,
-                ]);
+                ->get(self::API_URL.'?'.$query.'&category='.$categories);
         } catch (Throwable $exception) {
             report($exception);
 
@@ -107,7 +111,7 @@ class PageSpeedService
             ->filter(fn ($audit) => is_array($audit)
                 && ($audit['details']['type'] ?? null) === 'opportunity'
                 && is_numeric($audit['numericValue'] ?? null)
-                && $audit['numericValue'] > 0)
+                && $audit['numericValue'] >= 50)
             ->sortByDesc('numericValue')
             ->take(5)
             ->map(fn ($audit) => [
