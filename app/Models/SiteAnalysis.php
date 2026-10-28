@@ -11,6 +11,7 @@ class SiteAnalysis extends Model
         'site_id',
         'type',
         'data',
+        'summary',
         'score',
     ];
 
@@ -18,6 +19,7 @@ class SiteAnalysis extends Model
     {
         return [
             'data' => 'array',
+            'summary' => 'array',
             'score' => 'integer',
         ];
     }

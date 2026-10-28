@@ -48,7 +48,7 @@ class RunPageSpeedJob implements ShouldQueue
                 return;
             }
 
-            SiteAnalysis::create([
+            $analysis = SiteAnalysis::create([
                 'site_id' => $this->site->id,
                 'type' => $type,
                 'data' => $payload,
@@ -60,6 +60,8 @@ class RunPageSpeedJob implements ShouldQueue
                 $payload,
                 now()->addDay(),
             );
+
+            dispatch(new GenerateAnalysisSummaryJob($analysis));
         } finally {
             $lock->release();
         }

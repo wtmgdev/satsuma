@@ -64,11 +64,17 @@ export type PageSpeedPayload = {
     opportunities: { title: string; savings: string }[];
 };
 
+export type AnalysisSummary = {
+    headline: string;
+    points: string[];
+};
+
 export type SiteAnalysis = {
     id: number;
     type: string;
     score: number | null;
     data: PageSpeedPayload | null;
+    summary?: AnalysisSummary | null;
     created_at: string;
 };
 
