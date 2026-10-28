@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Gauge, RefreshCw, Sparkles, Zap } from 'lucide-react';
 import SiteController from '@/actions/App/Http/Controllers/SiteController';
@@ -200,9 +200,16 @@ export function PageSpeedPanel({
     desktop: SiteAnalysis | null | undefined;
 }) {
     const [analyzing, setAnalyzing] = useState(false);
-    const latestStamp = mobile?.created_at ?? desktop?.created_at ?? null;
 
     usePollWhile(analyzing, ['site', 'analyses'], 5000, 36);
+
+    // A run isn't done until both strategies have their AI summaries —
+    // the analysis row lands first, the summary follows ~15s later.
+    useEffect(() => {
+        if (analyzing && mobile?.summary && desktop?.summary) {
+            setAnalyzing(false);
+        }
+    }, [analyzing, mobile?.summary, desktop?.summary]);
 
     useEffect(() => {
         if (!analyzing) {
@@ -212,14 +219,6 @@ export function PageSpeedPanel({
 
         return () => window.clearTimeout(timer);
     }, [analyzing]);
-
-    const stampRef = useRef(latestStamp);
-    useEffect(() => {
-        if (analyzing && stampRef.current !== latestStamp) {
-            stampRef.current = latestStamp;
-            setAnalyzing(false);
-        }
-    }, [latestStamp, analyzing]);
 
     const run = () => {
         setAnalyzing(true);
