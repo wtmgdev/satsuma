@@ -273,14 +273,6 @@ export default function SiteShow({
                                     {site.last_scan_at ? timeAgo(site.last_scan_at) : 'Never'}
                                 </dd>
                             </div>
-                            {site.whois?.expires_at && (
-                                <div className="flex flex-col gap-1">
-                                    <dt className="text-xs text-muted-foreground">Domain expires</dt>
-                                    <dd className="font-medium" title={site.whois.registrar ?? undefined}>
-                                        {new Date(site.whois.expires_at).toLocaleDateString()}
-                                    </dd>
-                                </div>
-                            )}
                         </dl>
                     </CardContent>
                 </Card>
