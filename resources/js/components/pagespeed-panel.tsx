@@ -128,15 +128,13 @@ function StrategyCard({
                     <Collapsible>
                         <div className="flex flex-col gap-2 rounded-lg border border-border/40 bg-muted/30">
                             <CollapsibleTrigger asChild>
-                                <button className="flex w-full items-center justify-between px-4 py-3 text-left">
-                                    <span className="flex min-w-0 items-center gap-2">
-                                        <Sparkles className="size-3.5 shrink-0 text-orange-400" />
-                                        <span className="text-xs font-medium text-muted-foreground">
-                                            AI summary
-                                        </span>
-                                        <span className="truncate text-sm font-medium">
-                                            {analysis.summary.headline}
-                                        </span>
+                                <button className="flex w-full items-center gap-2 px-4 py-3 text-left">
+                                    <Sparkles className="size-3.5 shrink-0 text-orange-400" />
+                                    <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                                        AI summary
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                                        {analysis.summary.headline}
                                     </span>
                                     <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
                                 </button>
