@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { BarChart3, Gauge, Sparkles, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,6 +19,7 @@ import {
 
 type Credits = {
     balance: number;
+    purchased: number;
     allowance: number;
     unlimited: boolean;
     resetsAt: string | null;
@@ -28,7 +29,6 @@ type ActionUsage = {
     action: string;
     units: number;
     credits: number;
-    cost: number;
 };
 
 type Transaction = {
@@ -36,10 +36,10 @@ type Transaction = {
     action: string;
     credits: number;
     quantity: number;
-    cost_estimate: string | null;
     description: string | null;
     created_at: string;
     user?: { email: string } | null;
+    site?: { name: string } | null;
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -49,6 +49,7 @@ const ACTION_LABELS: Record<string, string> = {
     topup: 'Top-up',
     grant: 'Bonus grant',
     monthly_reset: 'Monthly reset',
+    monthly_expiry: 'Expired monthly credits',
 };
 
 const ACTION_ICONS: Record<string, typeof Gauge> = {
@@ -57,19 +58,14 @@ const ACTION_ICONS: Record<string, typeof Gauge> = {
     crawl_page: BarChart3,
 };
 
-const money = (value: number) =>
-    value >= 1 ? `$${value.toFixed(2)}` : `$${value.toFixed(4)}`;
-
 export default function Usage({
     credits,
     usedThisMonth,
-    estimatedCost,
     byAction,
     transactions,
 }: {
     credits: Credits;
     usedThisMonth: number;
-    estimatedCost: number;
     byAction: ActionUsage[];
     transactions: Transaction[];
 }) {
@@ -92,39 +88,6 @@ export default function Usage({
                     </p>
                 </div>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-start justify-between">
-                        <div>
-                            <CardTitle>Credits remaining</CardTitle>
-                            <CardDescription>
-                                {credits.unlimited
-                                    ? 'Unlimited — usage is tracked but never limited'
-                                    : `Refreshed monthly${resets ? ` — next refresh ${resets}` : ''}`}
-                            </CardDescription>
-                        </div>
-                        <span className="text-2xl font-semibold tabular-nums">
-                            {credits.unlimited ? '∞' : credits.balance.toLocaleString()}
-                        </span>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-3">
-                        {!credits.unlimited && credits.allowance > 0 && (
-                            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                                <div
-                                    className="h-full rounded-full bg-orange-400"
-                                    style={{
-                                        width: `${Math.max(Math.min((credits.balance / credits.allowance) * 100, 100), 1)}%`,
-                                    }}
-                                />
-                            </div>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                            {credits.unlimited
-                                ? 'Admin organization'
-                                : `${credits.balance.toLocaleString()} of ${credits.allowance.toLocaleString()} monthly credits${resets ? ` · resets ${resets}` : ''}`}
-                        </p>
-                    </CardContent>
-                </Card>
-
                 <div className="grid gap-4 md:grid-cols-3">
                     <Card>
                         <CardHeader>
@@ -137,43 +100,62 @@ export default function Usage({
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardDescription>Estimated external cost</CardDescription>
+                            <CardDescription>Monthly balance</CardDescription>
                             <CardTitle className="text-3xl tabular-nums">
-                                {money(estimatedCost)}
+                                {credits.unlimited
+                                    ? 'Unlimited'
+                                    : `${credits.balance.toLocaleString()} / ${credits.allowance.toLocaleString()}`}
                             </CardTitle>
-                            <CardDescription>this month</CardDescription>
+                            <CardDescription>
+                                {credits.unlimited
+                                    ? 'usage is tracked but never limited'
+                                    : resets
+                                      ? `resets ${resets}`
+                                      : 'refreshed monthly'}
+                            </CardDescription>
                         </CardHeader>
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardDescription>By action</CardDescription>
-                            <CardContent className="flex flex-col gap-1.5 p-0 pt-2">
-                                {byAction.length === 0 && (
-                                    <span className="text-sm text-muted-foreground">
-                                        No usage yet
-                                    </span>
-                                )}
-                                {byAction.map((row) => {
-                                    const Icon = ACTION_ICONS[row.action] ?? Zap;
-                                    return (
-                                        <span
-                                            key={row.action}
-                                            className="flex items-center justify-between text-sm"
-                                        >
-                                            <span className="flex items-center gap-2 text-muted-foreground">
-                                                <Icon className="size-3.5" />
-                                                {ACTION_LABELS[row.action] ?? row.action}
-                                            </span>
-                                            <span className="tabular-nums">
-                                                {row.units} · {money(row.cost)}
-                                            </span>
-                                        </span>
-                                    );
-                                })}
-                            </CardContent>
+                            <CardDescription>Purchased credits</CardDescription>
+                            <CardTitle className="text-3xl tabular-nums">
+                                {credits.purchased.toLocaleString()}
+                            </CardTitle>
+                            <CardDescription>never expire</CardDescription>
                         </CardHeader>
                     </Card>
                 </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>By action</CardTitle>
+                        <CardDescription>What consumed credits this month</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-1.5">
+                        {byAction.length === 0 && (
+                            <span className="text-sm text-muted-foreground">
+                                No usage yet
+                            </span>
+                        )}
+                        {byAction.map((row) => {
+                            const Icon = ACTION_ICONS[row.action] ?? Zap;
+                            return (
+                                <span
+                                    key={row.action}
+                                    className="flex items-center justify-between text-sm"
+                                >
+                                    <span className="flex items-center gap-2 text-muted-foreground">
+                                        <Icon className="size-3.5" />
+                                        {ACTION_LABELS[row.action] ?? row.action}
+                                    </span>
+                                    <span className="tabular-nums">
+                                        {row.units} units · {row.credits} credits
+                                    </span>
+                                </span>
+                            );
+                        })}
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader>
@@ -191,10 +173,10 @@ export default function Usage({
                                     <TableRow>
                                         <TableHead>When</TableHead>
                                         <TableHead>Action</TableHead>
+                                        <TableHead>Site</TableHead>
                                         <TableHead>User</TableHead>
-                                        <TableHead>Units</TableHead>
                                         <TableHead>Credits</TableHead>
-                                        <TableHead>Est. cost</TableHead>
+                                        <TableHead>Description</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -215,10 +197,10 @@ export default function Usage({
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-muted-foreground">
-                                                {transaction.user?.email ?? '—'}
+                                                {transaction.site?.name ?? '—'}
                                             </TableCell>
-                                            <TableCell className="tabular-nums">
-                                                {transaction.quantity}
+                                            <TableCell className="text-muted-foreground">
+                                                {transaction.user?.email ?? '—'}
                                             </TableCell>
                                             <TableCell
                                                 className={
@@ -230,10 +212,8 @@ export default function Usage({
                                                 {transaction.credits > 0 ? '+' : ''}
                                                 {transaction.credits}
                                             </TableCell>
-                                            <TableCell className="tabular-nums text-muted-foreground">
-                                                {transaction.cost_estimate
-                                                    ? money(Number(transaction.cost_estimate))
-                                                    : '—'}
+                                            <TableCell className="text-muted-foreground">
+                                                {transaction.description ?? '—'}
                                             </TableCell>
                                         </TableRow>
                                     ))}

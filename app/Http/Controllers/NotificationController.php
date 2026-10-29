@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Notifications\DatabaseNotificationCollection;
 
 class NotificationController extends Controller
 {
@@ -20,7 +19,7 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request): Response
     {
-        $request->user()->unreadNotifications->markRead();
+        $request->user()->unreadNotifications()->update(['read_at' => now()]);
 
         return response()->json(['unread' => 0]);
     }

@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\CreditTransactions\Tables;
 
 use App\Models\CreditTransaction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class CreditTransactionsTable
@@ -18,7 +20,11 @@ class CreditTransactionsTable
                     ->sortable(),
                 TextColumn::make('organization.name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder('Deleted organization'),
+                TextColumn::make('site.name')
+                    ->placeholder('—')
+                    ->label('Site'),
                 TextColumn::make('user.email')
                     ->placeholder('—')
                     ->label('User'),
@@ -37,6 +43,9 @@ class CreditTransactionsTable
                 TextColumn::make('cost_estimate')
                     ->money('USD')
                     ->label('Est. cost'),
+                IconColumn::make('metered')
+                    ->boolean()
+                    ->label('Metered'),
                 TextColumn::make('description')
                     ->placeholder('—')
                     ->limit(40),
@@ -50,7 +59,12 @@ class CreditTransactionsTable
                         'topup' => 'Top-up',
                         'grant' => 'Bonus grant',
                         'monthly_reset' => 'Monthly reset',
+                        'monthly_expiry' => 'Monthly expiry',
                     ]),
+                TernaryFilter::make('metered')
+                    ->label('Metered')
+                    ->trueLabel('Customer')
+                    ->falseLabel('Internal'),
             ])
             ->defaultSort('created_at', 'desc');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CreditService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +19,7 @@ class Organization extends Model
         'name',
         'slug',
         'credits_balance',
+        'credits_purchased',
         'credits_allowance',
         'credits_unlimited',
         'credits_reset_at',
@@ -27,6 +29,7 @@ class Organization extends Model
     {
         return [
             'credits_balance' => 'integer',
+            'credits_purchased' => 'integer',
             'credits_allowance' => 'integer',
             'credits_unlimited' => 'boolean',
             'credits_reset_at' => 'datetime',
@@ -42,6 +45,8 @@ class Organization extends Model
             ]);
 
             $organization->members()->attach($user->id, ['role' => 'owner']);
+
+            app(CreditService::class)->initialize($organization);
 
             return $organization;
         });

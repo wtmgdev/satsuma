@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CreditTransaction;
 use App\Models\Organization;
 use App\Services\CreditService;
 use Illuminate\Http\Request;
@@ -19,39 +20,38 @@ class UsageController extends Controller
         $credits = app(CreditService::class);
         $monthStart = now()->startOfMonth();
 
+        // Cost estimates never leave the server — customers see credits only.
         $transactions = $organization->creditTransactions()
-            ->with('user:id,email')
+            ->with(['user:id,email', 'site:id,name'])
             ->latest('created_at')
             ->limit(50)
-            ->get(['id', 'user_id', 'action', 'credits', 'quantity', 'cost_estimate', 'description', 'created_at']);
+            ->get(['id', 'user_id', 'site_id', 'action', 'credits', 'quantity', 'description', 'created_at']);
 
-        $spend = $organization->creditTransactions()
-            ->where('credits', '<', 0)
-            ->where('created_at', '>=', $monthStart);
+        $usedThisMonth = $organization->creditTransactions()
+            ->usage()
+            ->where('created_at', '>=', $monthStart)
+            ->sum('credits');
 
-        $usedThisMonth = -(int) $spend->clone()->sum('credits');
-        $estimatedCost = (float) $spend->clone()->sum('cost_estimate');
-
-        $byAction = (clone $spend)->selectRaw('action, SUM(quantity) as units, SUM(credits) as credits, SUM(cost_estimate) as cost')
-            ->groupBy('action')
-            ->get()
-            ->map(fn ($row) => [
-                'action' => $row->action,
-                'units' => (int) $row->units,
-                'credits' => -(int) $row->credits,
-                'cost' => (float) $row->cost,
-            ]);
+        $byAction = $credits->usageByAction(
+            CreditTransaction::query()
+                ->where('organization_id', $organization->id)
+                ->where('created_at', '>=', $monthStart)
+        );
 
         return Inertia::render('usage', [
             'credits' => [
                 'balance' => $organization->credits_balance,
+                'purchased' => $organization->credits_purchased,
                 'allowance' => $credits->allowance($organization),
                 'unlimited' => $organization->credits_unlimited,
                 'resetsAt' => $organization->credits_reset_at?->toIso8601String(),
             ],
-            'usedThisMonth' => $usedThisMonth,
-            'estimatedCost' => $estimatedCost,
-            'byAction' => $byAction,
+            'usedThisMonth' => -(int) $usedThisMonth,
+            'byAction' => $byAction->map(fn (array $row) => [
+                'action' => $row['action'],
+                'units' => $row['units'],
+                'credits' => $row['credits'],
+            ])->values(),
             'transactions' => $transactions,
         ]);
     }

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Client;
-use App\Models\Site;
 use App\Models\SitePlugin;
 use App\Models\SiteTheme;
 use Illuminate\Http\Request;
@@ -14,22 +12,32 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $sites = Site::query()
-            ->with('client:id,name')
-            ->orderBy('name')
-            ->get([
-                'id',
-                'client_id',
-                'name',
-                'url',
-                'connection_status',
-                'wp_version',
-                'php_version',
-                'last_ping_at',
-            ]);
+        $organization = $request->attributes->get('currentOrganization');
 
-        $pendingUpdates = SitePlugin::where('update_available', true)->count()
-            + SiteTheme::where('update_available', true)->count();
+        $sites = $organization
+            ? $organization->sites()
+                ->with('client:id,name')
+                ->orderBy('name')
+                ->get([
+                    'id',
+                    'client_id',
+                    'name',
+                    'url',
+                    'connection_status',
+                    'wp_version',
+                    'php_version',
+                    'last_ping_at',
+                ])
+            : collect();
+
+        $pendingUpdates = $organization
+            ? SitePlugin::where('update_available', true)
+                    ->whereHas('site', fn ($query) => $query->where('organization_id', $organization->id))
+                    ->count()
+                + SiteTheme::where('update_available', true)
+                    ->whereHas('site', fn ($query) => $query->where('organization_id', $organization->id))
+                    ->count()
+            : 0;
 
         return Inertia::render('dashboard', [
             'stats' => [
@@ -39,7 +47,9 @@ class DashboardController extends Controller
                 'pendingUpdates' => $pendingUpdates,
             ],
             'sites' => $sites,
-            'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
+            'clients' => $organization
+                ? $organization->clients()->orderBy('name')->get(['id', 'name'])
+                : collect(),
             'agentPluginVersion' => AgentPluginController::version(),
         ]);
     }

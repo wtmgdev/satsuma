@@ -65,6 +65,7 @@ class HandleInertiaRequests extends Middleware
 
         return [
             'balance' => $organization->credits_balance,
+            'purchased' => $organization->credits_purchased,
             'allowance' => app(CreditService::class)->allowance($organization),
             'unlimited' => $organization->credits_unlimited,
             'resetsAt' => $organization->credits_reset_at?->toIso8601String(),

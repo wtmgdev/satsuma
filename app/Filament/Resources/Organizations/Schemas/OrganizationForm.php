@@ -18,12 +18,7 @@ class OrganizationForm
                 ->numeric()
                 ->minValue(0)
                 ->nullable()
-                ->helperText('Monthly allowance. Leave empty to use the app default.'),
-            TextInput::make('credits_balance')
-                ->numeric()
-                ->minValue(0)
-                ->nullable()
-                ->helperText('Current balance. Ignored when unlimited.'),
+                ->helperText('Monthly allowance — takes effect at the next reset. Leave empty to use the app default.'),
             Toggle::make('credits_unlimited')
                 ->label('Unlimited credits')
                 ->helperText('Usage is still recorded for spend analytics, but never blocked.'),

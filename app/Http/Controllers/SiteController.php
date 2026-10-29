@@ -20,6 +20,7 @@ use App\Services\WordPressClientService;
 use App\ConnectionStatus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -119,18 +120,27 @@ class SiteController extends Controller
 
     public function runPageSpeed(Request $request, Site $site, DispatchSiteJob $dispatch, CreditService $credits): RedirectResponse
     {
-        $this->authorize('update', $site);
+        $this->authorize('scan', $site);
+
+        // Refuse while another analysis is still queued/running for this site.
+        if (! Cache::add("pagespeed:pending:{$site->id}", true, now()->addMinutes(5))) {
+            return redirect()->route('sites.show', $site)
+                ->flashToast('info', 'An analysis is already running for this site.');
+        }
 
         // 2 analyses + 2 AI summaries, charged upfront.
-        if (! $credits->charge($site->organization, 'pagespeed_analysis', 2, $request->user())
-            || ! $credits->charge($site->organization, 'ai_summary', 2, $request->user())
-        ) {
+        if (! $credits->charge($site->organization, [
+            'pagespeed_analysis' => 2,
+            'ai_summary' => 2,
+        ], $request->user(), $site)) {
+            Cache::forget("pagespeed:pending:{$site->id}");
+
             return redirect()->route('sites.show', $site)
                 ->flashToast('error', 'Not enough credits — your organization is out of credits for this month.');
         }
 
         foreach (['mobile', 'desktop'] as $strategy) {
-            $dispatch->handle($site, new RunPageSpeedJob($site, $strategy, force: true));
+            $dispatch->handle($site, new RunPageSpeedJob($site, $strategy, force: true, charged: true));
         }
 
         return redirect()->route('sites.show', $site)

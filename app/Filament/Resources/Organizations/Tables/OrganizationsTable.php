@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Organizations\Tables;
 use App\Models\Organization;
 use App\Services\CreditService;
 use Filament\Actions\Action;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\IconColumn;
@@ -27,7 +28,11 @@ class OrganizationsTable
                 TextColumn::make('credits_balance')
                     ->numeric()
                     ->sortable()
-                    ->label('Balance'),
+                    ->label('Monthly'),
+                TextColumn::make('credits_purchased')
+                    ->numeric()
+                    ->sortable()
+                    ->label('Purchased'),
                 TextColumn::make('credits_allowance')
                     ->placeholder('Default')
                     ->label('Allowance'),
@@ -42,6 +47,7 @@ class OrganizationsTable
                 //
             ])
             ->recordActions([
+                EditAction::make(),
                 Action::make('grantCredits')
                     ->label('Grant credits')
                     ->icon('heroicon-o-plus-circle')
@@ -63,6 +69,7 @@ class OrganizationsTable
                             $record,
                             (int) $data['amount'],
                             $data['action'],
+                            auth()->user(),
                             'Granted via admin panel',
                         );
                     })

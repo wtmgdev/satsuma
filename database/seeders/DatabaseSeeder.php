@@ -26,8 +26,11 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
+        $admin->forceFill(['is_super_admin' => true])->save();
+
         if ($admin->organizations()->count() === 0) {
-            Organization::createWithOwner($admin, 'Shoal Demo');
+            Organization::createWithOwner($admin, 'Satsuma')
+                ->forceFill(['credits_unlimited' => true])->save();
         }
     }
 }

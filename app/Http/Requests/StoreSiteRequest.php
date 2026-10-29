@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSiteRequest extends FormRequest
 {
@@ -13,8 +14,10 @@ class StoreSiteRequest extends FormRequest
 
     public function rules(): array
     {
+        $organizationId = $this->attributes->get('currentOrganization')?->id;
+
         return [
-            'client_id' => ['nullable', 'exists:clients,id'],
+            'client_id' => ['nullable', Rule::exists('clients', 'id')->where('organization_id', $organizationId)],
             'name' => ['required', 'string', 'max:255'],
             'url' => ['required', 'string', 'url', 'max:255', 'unique:sites,url'],
             'api_token' => ['nullable', 'string', 'max:255'],

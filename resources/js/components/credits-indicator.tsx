@@ -3,6 +3,7 @@ import { Zap } from 'lucide-react';
 
 type Credits = {
     balance: number;
+    purchased: number;
     allowance: number;
     unlimited: boolean;
     resetsAt: string | null;
@@ -29,16 +30,22 @@ export function CreditsIndicator() {
     const resets = credits.resetsAt
         ? new Date(credits.resetsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
         : null;
+    const title = [
+        resets ? `Resets ${resets}` : null,
+        credits.purchased > 0 ? `${credits.purchased} purchased` : null,
+    ]
+        .filter(Boolean)
+        .join(' · ');
 
     return (
         <div
             className="flex flex-col gap-1.5 px-2 py-1.5"
-            title={resets ? `Resets ${resets}` : undefined}
+            title={title || undefined}
         >
             <span className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Zap className="size-3.5 text-orange-400" />
                 <span className="tabular-nums">
-                    {credits.balance} / {credits.allowance} credits
+                    {credits.balance + credits.purchased} credits left
                 </span>
             </span>
             <div className="h-1 w-full overflow-hidden rounded-full bg-muted">

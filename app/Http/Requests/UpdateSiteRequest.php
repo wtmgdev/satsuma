@@ -15,7 +15,7 @@ class UpdateSiteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'client_id' => ['nullable', 'exists:clients,id'],
+            'client_id' => ['nullable', Rule::exists('clients', 'id')->where('organization_id', $this->site?->organization_id)],
             'name' => ['required', 'string', 'max:255'],
             'url' => ['required', 'string', 'url', 'max:255', Rule::unique('sites', 'url')->ignore($this->site)],
             'api_token' => ['nullable', 'string', 'max:255'],

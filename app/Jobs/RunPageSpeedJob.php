@@ -4,11 +4,13 @@ namespace App\Jobs;
 
 use App\Models\Site;
 use App\Models\SiteAnalysis;
+use App\Services\CreditService;
 use App\Services\PageSpeedService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class RunPageSpeedJob implements ShouldQueue
 {
@@ -22,6 +24,7 @@ class RunPageSpeedJob implements ShouldQueue
         public Site $site,
         public string $strategy = 'mobile',
         public bool $force = false,
+        public bool $charged = false,
     ) {}
 
     public function handle(PageSpeedService $service): void
@@ -32,6 +35,8 @@ class RunPageSpeedJob implements ShouldQueue
         $lock = Cache::lock("pagespeed:{$this->site->id}:{$this->strategy}", 300);
 
         if (! $lock->get()) {
+            $this->refund();
+
             return;
         }
 
@@ -45,6 +50,8 @@ class RunPageSpeedJob implements ShouldQueue
             $payload = $service->analyze($this->site, $this->strategy);
 
             if ($payload === null) {
+                $this->refund();
+
                 return;
             }
 
@@ -55,13 +62,7 @@ class RunPageSpeedJob implements ShouldQueue
                 'score' => $payload['scores']['performance'],
             ]);
 
-            Cache::put(
-                "pagespeed:{$this->site->id}:{$this->strategy}",
-                $payload,
-                now()->addDay(),
-            );
-
-            dispatch(new GenerateAnalysisSummaryJob($analysis));
+            dispatch(new GenerateAnalysisSummaryJob($analysis, charged: $this->charged));
         } finally {
             $lock->release();
         }
@@ -74,5 +75,22 @@ class RunPageSpeedJob implements ShouldQueue
             'strategy' => $this->strategy,
             'error' => $exception->getMessage(),
         ]);
+
+        $this->refund();
+    }
+
+    /**
+     * Return the prepaid credits: the analysis itself plus the AI summary
+     * that won't run without a payload.
+     */
+    private function refund(): void
+    {
+        if (! $this->charged || $this->site->organization === null) {
+            return;
+        }
+
+        $credits = app(CreditService::class);
+        $credits->refund($this->site->organization, 'pagespeed_analysis', site: $this->site);
+        $credits->refund($this->site->organization, 'ai_summary', site: $this->site);
     }
 }
