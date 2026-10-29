@@ -1,6 +1,6 @@
 # Satsuma — Roadmap
 
-Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + Filament (internal ops panel only).
+WordPress management platform. Laravel + Inertia/React (main app) + Filament (internal ops panel only).
 
 ## Architecture
 
@@ -24,7 +24,7 @@ Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + 
   setup (token reveal/copy, plugin download)
 - [x] Companion WP agent plugin: `wp-agent/satsuma-agent.php` —
   `GET /wp-json/agent/v1/system-info`, `hash_equals` token check
-  (`wp satsuma token <token>` or `SHOAL_AGENT_TOKEN` constant)
+  (`wp satsuma token <token>` or `SATSUMA_AGENT_TOKEN` constant)
 - [x] Organizations: membership roles (owner/admin/member), session-based current
   org, sidebar switcher, org settings (rename + member management), policies
   enforcing role ranks, personal workspace on registration
@@ -38,6 +38,19 @@ Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + 
 - [x] Connection pings + scan lifecycle (queued/running/idle) with live UI
   updates via partial-reload polling; synchronous Test Connection with
   definitive result toasts
+- [x] Notifications: in-app bell (sidebar) + email via Resend — site offline /
+  back online, new critical/high CVEs (deduped per site); org-member targeting
+- [x] Scheduled uptime pings (every 5 min) + daily RDAP whois (registrar,
+  expiry, nameservers) on the site page
+- [x] Performance tab: queued Google PageSpeed (mobile + desktop) with per-site
+  locks, 24h freshness, score rings/metrics/opportunities, AI summaries via
+  Berget (Laravel AI SDK, openai-compatible)
+- [x] Credits system: org-level monthly pools, hard block at zero, top-up
+  grants, `credits_unlimited` for our own org, transaction ledger with
+  estimated external cost, sidebar balance indicator, `/usage` page,
+  Filament spend analytics (stats + 30-day chart)
+- [x] Static privacy/cookie policy pages served outside the app
+  (`public/*.html`)
 
 ### Known gaps
 - Scans are **manual only** — no scheduled/automatic scanning yet
@@ -60,6 +73,25 @@ Self-hosted WordPress management platform. Laravel + Inertia/React (main app) + 
 5. **Email invitations** — invite members by email (signed invite links).
 
 ## Later phases
+
+### EmDash support (pinned investigation)
+EmDash (Cloudflare's Astro-based CMS, MIT, open source) is a modern WordPress
+successor with a built-in WP importer — supporting it broadens the platform
+beyond WordPress and the migration path is a selling point.
+
+- [ ] **Platform abstraction** — `platform` column on sites
+  (`wordpress|emdash`); extract a `SiteConnector` contract from
+  `WordPressClientService` (ping, inventory, versions) with per-platform
+  implementations; make the vulnerability feed WP-only (EmDash sites skip it).
+- [ ] **EmDash connector** — EmDash ships a REST API + per-site MCP server;
+  investigate what inventory it exposes (EmDash version, collections, plugins)
+  and whether a small companion integration (or its API directly) can report
+  health like the WP agent does.
+- [ ] **WP → EmDash migration wizard** — orchestrate EmDash's own importer
+  from Satsuma: trigger a WXR export via the WP agent (or the EmDash Exporter
+  plugin path with an application password), hand it to the target EmDash
+  site's import endpoint, track progress + verification checklist. Position:
+  "modernize your site" upsell for agency clients.
 
 ### Safe updates
 - Agent gains update actions (`POST /wp-json/agent/v1/updates`).
