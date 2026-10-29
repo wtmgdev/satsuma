@@ -46,11 +46,13 @@ npm run dev           # vite
 php artisan dev       # or: composer run dev — server + horizon + vite + logs
 ```
 
-Seed an admin user for the Filament panel:
+Seed test accounts and demo data:
 
 ```bash
 php artisan db:seed
-# /admin — admin@satsuma.test / password
+# admin@satsuma.test / password — superadmin (/admin), unlimited org
+# demo@satsuma.test  / password — customer; agency org with sites,
+#                               plugins, an analysis and a credit ledger
 ```
 
 ### Environment

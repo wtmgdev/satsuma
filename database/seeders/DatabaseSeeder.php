@@ -32,5 +32,7 @@ class DatabaseSeeder extends Seeder
             Organization::createWithOwner($admin, 'Satsuma')
                 ->forceFill(['credits_unlimited' => true])->save();
         }
+
+        $this->call(DemoSeeder::class);
     }
 }
