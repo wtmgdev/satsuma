@@ -1,8 +1,13 @@
 import type { SVGAttributes } from 'react';
 
-export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
+export default function AppLogoIcon({ className, ...props }: SVGAttributes<SVGElement>) {
     return (
-        <svg {...props} viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+        <svg
+            {...props}
+            viewBox="0 0 256 256"
+            xmlns="http://www.w3.org/2000/svg"
+            className={`${className ?? ''} origin-center animate-[spin_45s_linear_infinite]`}
+        >
             <path
                 d="M224 128C224 102.539 213.886 78.1212 195.882 60.1177C177.879 42.1143 153.461 32 128 32C102.539 32 78.1212 42.1143 60.1177 60.1177C42.1143 78.1212 32 102.539 32 128C32 153.461 42.1143 177.879 60.1177 195.882C78.1212 213.886 102.539 224 128 224C153.461 224 177.879 213.886 195.882 195.882C213.886 177.879 224 153.461 224 128ZM213 128C213 105.457 204.045 83.8365 188.104 67.8959C172.163 51.9553 150.543 43 128 43C105.457 43 83.8365 51.9553 67.8959 67.8959C51.9553 83.8365 43 105.457 43 128C43 150.543 51.9553 172.163 67.8959 188.104C83.8365 204.045 105.457 213 128 213C150.543 213 172.163 204.045 188.104 188.104C204.045 172.163 213 150.543 213 128Z"
                 fillRule="evenodd"
