@@ -70,6 +70,20 @@ RESEND_API_KEY=                 # falls back to the log mailer without it
 METERED_ACTIONS_DRY_RUN=        # true = record credit usage, never enforce (local dev)
 ```
 
+### A real WordPress site to sync against
+
+```bash
+docker compose up -d    # WP + MySQL at http://localhost:8080
+```
+
+Install the downloaded `satsuma-agent.zip` there, set its token, then ping and
+scan it like a production site — the full sync path runs locally.
+
+The test suite also replays a recorded real agent response
+(`tests/fixtures/agent/system-info.json`) through the sync job to catch
+protocol drift; re-record it with `curl -H "X-Agent-Token: <token>"
+https://<site>/wp-json/agent/v1/system-info` when the agent version changes.
+
 ## Connecting a site
 
 1. Download the agent plugin from the dashboard or any site page
